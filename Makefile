@@ -10,3 +10,10 @@ generate-types:
 test:
 	$(GO) test $(GO_FLAGS) $(shell $(GO) list ./...)
 
+FUZZ_TIME ?= 10m
+
+.PHONY: fuzz
+fuzz:
+	bash scripts/fuzz-corpus.sh
+	$(GO) test -run=^$$ -fuzz=FuzzParseJFR -fuzztime=$(FUZZ_TIME) ./pprof/
+

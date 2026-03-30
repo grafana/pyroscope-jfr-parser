@@ -1,0 +1,26 @@
+name: Fuzz
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 3 * * 1' # Weekly Monday 03:00 UTC
+
+permissions:
+  contents: read
+
+jobs:
+  fuzz:
+    runs-on: ubuntu-x64
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: 'false'
+      - name: Install Go
+        uses: actions/setup-go@4b73464bb391d4059bd26b0524d20df3927bd417 # v6.3.0
+        with:
+          go-version: 1.24
+      - name: Prepare fuzz corpus
+        run: bash scripts/fuzz-corpus.sh
+      - name: Fuzz
+        run: go test -run=^$ -fuzz=FuzzParseJFR -fuzztime=4h ./pprof/
