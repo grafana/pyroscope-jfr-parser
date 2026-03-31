@@ -122,6 +122,9 @@ func (p *Parser) ParseEvent() (def.TypeID, error) {
 		if size == 0 {
 			return 0, def.ErrIntOverflow
 		}
+		if uint64(p.chunkEnd-pp) < size {
+			return 0, fmt.Errorf("invalid event size %d at position %d", size, pp)
+		}
 		typ, err := p.varLong()
 		if err != nil {
 			return 0, err
@@ -330,7 +333,7 @@ func (p *Parser) readChunk(pos int) error {
 }
 
 func (p *Parser) seek(pos int) error {
-	if pos < len(p.buf) {
+	if pos >= 0 && pos < len(p.buf) {
 		p.pos = pos
 		return nil
 	}

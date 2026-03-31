@@ -437,3 +437,32 @@ func stackCollapseProto(p *profilev1.Profile, lineNumbers bool) string {
 func TestProfileId(t *testing.T) {
 	assert.Equal(t, "00000000000000ef", profileIdString(0xef))
 }
+
+// TestParseJFROversizedEventSize is a regression test for
+// https://github.com/grafana/jfr-parser/issues/90.
+// An event whose size field encodes a uint64 with the high bit set causes
+// int(size) to be a large negative number, making p.pos = pp + int(size)
+// negative. The next p.buf[p.pos] access then panics with
+// "index out of range [negative]". The fix validates size against the chunk
+// bounds before advancing p.pos.
+func TestParseJFROversizedEventSize(t *testing.T) {
+	data := readGzipFile(t, testdataDir+"example.jfr.gz")
+
+	// Overwrite the first event's size varint (at offset 68, right after the
+	// chunk header) with 9 bytes of 0x80. The modified LEB128 decoder reads
+	// the 9th byte with all 8 bits, giving uint64(0x8000000000000000).
+	// int(0x8000000000000000) == math.MinInt64, so without the fix
+	// p.pos = 68 + MinInt64 which is deeply negative and causes a panic.
+	const chunkHeaderSize = 68
+	copy(data[chunkHeaderSize:], []byte{0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80})
+
+	pi := &ParseInput{
+		StartTime: time.Now(),
+		EndTime:   time.Now().Add(time.Minute),
+	}
+
+	require.NotPanics(t, func() {
+		_, err := ParseJFR(data, pi, nil, WithDisablePanicRecovery(true))
+		require.Error(t, err)
+	})
+}
