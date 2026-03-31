@@ -3,6 +3,7 @@ package parser
 import (
 	"fmt"
 	"io"
+	"strings"
 	"unsafe"
 
 	types2 "github.com/grafana/jfr-parser/parser/types"
@@ -94,6 +95,10 @@ type Parser struct {
 	bindWallClockSample  *types2.BindWallClockSample
 	bindMalloc           *types2.BindMalloc
 	bindFree             *types2.BindFree
+
+	DebugFile    io.Writer
+	DebugTraceAll bool
+	debugFoundRemaining bool
 }
 
 func NewParser(buf []byte, options Options) *Parser {
@@ -122,139 +127,274 @@ func (p *Parser) ParseEvent() (def.TypeID, error) {
 		if size == 0 {
 			return 0, def.ErrIntOverflow
 		}
+		eventEnd := pp + int(size)
+		if int(size) < 0 || eventEnd < pp || eventEnd > p.chunkEnd {
+			err := fmt.Errorf("invalid event size %d at position %d", size, pp)
+			if p.DebugFile != nil {
+				fmt.Fprintf(p.DebugFile, "pos=%d size=%d err=%v\n", pp, size, err)
+			}
+			return 0, err
+		}
 		typ, err := p.varLong()
 		if err != nil {
 			return 0, err
 		}
-		_ = size
 
 		ttyp := def.TypeID(typ)
+		if p.DebugFile != nil && p.DebugTraceAll {
+			name := fmt.Sprintf("%d", ttyp)
+			if cls, ok := p.TypeMap.IDMap[ttyp]; ok {
+				name = cls.Name
+			}
+			fmt.Fprintf(p.DebugFile, "pos=%d size=%d type=%s\n", pp, size, name)
+		}
 		switch ttyp {
 		case p.TypeMap.T_EXECUTION_SAMPLE:
 			if p.bindExecutionSample == nil {
-				p.pos = pp + int(size) // skip
+				p.pos = eventEnd // skip
 				continue
 			}
 			_, err := p.ExecutionSample.Parse(p.buf[p.pos:], p.bindExecutionSample, &p.TypeMap)
 			if err != nil {
 				return 0, err
 			}
-			p.pos = pp + int(size)
+			p.pos = eventEnd
 			return ttyp, nil
 		case p.TypeMap.T_WALL_CLOCK_SAMPLE:
 			if p.bindWallClockSample == nil {
-				p.pos = pp + int(size) // skip
+				p.pos = eventEnd // skip
 				continue
 			}
 			_, err := p.WallClockSample.Parse(p.buf[p.pos:], p.bindWallClockSample, &p.TypeMap)
 			if err != nil {
 				return 0, err
 			}
-			p.pos = pp + int(size)
+			p.pos = eventEnd
 			return ttyp, nil
 		case p.TypeMap.T_MALLOC:
 			if p.bindMalloc == nil {
-				p.pos = pp + int(size) // skip
+				p.pos = eventEnd // skip
 				continue
 			}
 			_, err := p.Malloc.Parse(p.buf[p.pos:], p.bindMalloc, &p.TypeMap)
 			if err != nil {
 				return 0, err
 			}
-			p.pos = pp + int(size)
+			p.pos = eventEnd
 			return ttyp, nil
 		case p.TypeMap.T_FREE:
 			if p.bindFree == nil {
-				p.pos = pp + int(size) // skip
+				p.pos = eventEnd // skip
 				continue
 			}
 			_, err := p.Free.Parse(p.buf[p.pos:], p.bindFree, &p.TypeMap)
 			if err != nil {
 				return 0, err
 			}
-			p.pos = pp + int(size)
+			p.pos = eventEnd
 			return ttyp, nil
 		case p.TypeMap.T_ALLOC_IN_NEW_TLAB:
 			if p.bindAllocInNewTLAB == nil {
-				p.pos = pp + int(size) // skip
+				p.pos = eventEnd // skip
 				continue
 			}
 			_, err := p.ObjectAllocationInNewTLAB.Parse(p.buf[p.pos:], p.bindAllocInNewTLAB, &p.TypeMap)
 			if err != nil {
 				return 0, err
 			}
-			p.pos = pp + int(size)
+			p.pos = eventEnd
 			return ttyp, nil
 		case p.TypeMap.T_ALLOC_OUTSIDE_TLAB:
 			if p.bindAllocOutsideTLAB == nil {
-				p.pos = pp + int(size) // skip
+				p.pos = eventEnd // skip
 				continue
 			}
 			_, err := p.ObjectAllocationOutsideTLAB.Parse(p.buf[p.pos:], p.bindAllocOutsideTLAB, &p.TypeMap)
 			if err != nil {
 				return 0, err
 			}
-			p.pos = pp + int(size)
+			p.pos = eventEnd
 			return ttyp, nil
 		case p.TypeMap.T_ALLOC_SAMPLE:
 			if p.bindAllocSample == nil {
-				p.pos = pp + int(size) // skip
+				p.pos = eventEnd // skip
 			}
 			_, err := p.ObjectAllocationSample.Parse(p.buf[p.pos:], p.bindAllocSample, &p.TypeMap)
 			if err != nil {
 				return 0, err
 			}
-			p.pos = pp + int(size)
+			p.pos = eventEnd
 			return ttyp, nil
 		case p.TypeMap.T_LIVE_OBJECT:
 			if p.bindLiveObject == nil {
-				p.pos = pp + int(size) // skip
+				p.pos = eventEnd // skip
 				continue
 			}
 			_, err := p.LiveObject.Parse(p.buf[p.pos:], p.bindLiveObject, &p.TypeMap)
 			if err != nil {
 				return 0, err
 			}
-			p.pos = pp + int(size)
+			p.pos = eventEnd
 			return ttyp, nil
 		case p.TypeMap.T_MONITOR_ENTER:
 			if p.bindMonitorEnter == nil {
-				p.pos = pp + int(size) // skip
+				p.pos = eventEnd // skip
 				continue
 			}
 			_, err := p.JavaMonitorEnter.Parse(p.buf[p.pos:], p.bindMonitorEnter, &p.TypeMap)
 			if err != nil {
 				return 0, err
 			}
-			p.pos = pp + int(size)
+			p.pos = eventEnd
 			return ttyp, nil
 		case p.TypeMap.T_THREAD_PARK:
 			if p.bindThreadPark == nil {
-				p.pos = pp + int(size) // skip
+				p.pos = eventEnd // skip
 				continue
 			}
 			_, err := p.ThreadPark.Parse(p.buf[p.pos:], p.bindThreadPark, &p.TypeMap)
 			if err != nil {
 				return 0, err
 			}
-			p.pos = pp + int(size)
+			p.pos = eventEnd
 			return ttyp, nil
 
 		case p.TypeMap.T_ACTIVE_SETTING:
 			if p.bindActiveSetting == nil {
-				p.pos = pp + int(size) // skip
+				p.pos = eventEnd // skip
 				continue
 			}
 			_, err := p.ActiveSetting.Parse(p.buf[p.pos:], p.bindActiveSetting, &p.TypeMap)
 			if err != nil {
 				return 0, err
 			}
-			p.pos = pp + int(size)
+			p.pos = eventEnd
 			return ttyp, nil
 		default:
-			//fmt.Printf("skipping %s %v\n", def.TypeID2Sym(ttyp), ttyp)
-			p.pos = pp + int(size)
+			if p.DebugFile != nil && (p.DebugTraceAll || !p.debugFoundRemaining) {
+				p.reflectDebugDump(ttyp, pp, size, eventEnd)
+			}
+			p.pos = eventEnd
 		}
+	}
+}
+
+func (p *Parser) reflectDebugDump(ttyp def.TypeID, pp int, size uint64, eventEnd int) {
+	cls, ok := p.TypeMap.IDMap[ttyp]
+	if !ok {
+		return
+	}
+	switch cls.Name {
+	case "jdk.NetworkUtilization", "jdk.DataLoss",
+		"jdk.ThreadSleep", "jdk.JavaExceptionThrow", "jdk.FileWrite",
+		"jdk.InitialSystemProperty", "jdk.MetaspaceChunkFreeListSummary",
+		"jdk.OldGarbageCollection":
+	default:
+		return
+	}
+	savedPos := p.pos
+	defer func() { p.pos = savedPos }()
+
+	var buf strings.Builder
+	fmt.Fprintf(&buf, "  skipping pos=%d size=%d type=%s\n", pp, size, cls.Name)
+	fmt.Fprintf(&buf, "    == %s fields ==\n", cls.Name)
+	for _, f := range cls.Fields {
+		if p.pos >= eventEnd {
+			fmt.Fprintf(&buf, "    %s: <past event end>\n", f.Name)
+			break
+		}
+		fieldType, _ := p.TypeMap.IDMap[f.Type]
+		typeName := ""
+		if fieldType != nil {
+			typeName = fieldType.Name
+		}
+		if f.ConstantPool {
+			v, err := p.varLong()
+			if err != nil {
+				fmt.Fprintf(&buf, "    %s: <err: %v>\n", f.Name, err)
+				break
+			}
+			fmt.Fprintf(&buf, "    %s: ref=%d (type=%s, cp=true)\n", f.Name, v, typeName)
+			if typeName == "java.lang.Class" {
+				cls := p.GetClass(types2.ClassRef(v))
+				if cls != nil {
+					clsSym := p.GetSymbol(cls.Name)
+					if clsSym != nil {
+						fmt.Fprintf(&buf, "      -> %s\n", clsSym.String)
+					}
+				}
+			}
+			if typeName == "jdk.types.StackTrace" {
+				st := p.GetStacktrace(types2.StackTraceRef(v))
+				if st != nil {
+					for i, frame := range st.Frames {
+						m := p.GetMethod(frame.Method)
+						if m == nil {
+							fmt.Fprintf(&buf, "      [%d] method=%d line=%d\n", i, frame.Method, frame.LineNumber)
+							continue
+						}
+						cls := p.GetClass(types2.ClassRef(m.Type))
+						sym := p.GetSymbol(m.Name)
+						clsName := ""
+						if cls != nil {
+							clsSym := p.GetSymbol(cls.Name)
+							if clsSym != nil {
+								clsName = clsSym.String
+							}
+						}
+						methName := ""
+						if sym != nil {
+							methName = sym.String
+						}
+						fmt.Fprintf(&buf, "      [%d] %s.%s:%d\n", i, clsName, methName, frame.LineNumber)
+					}
+				}
+			}
+		} else if typeName == "long" || typeName == "int" || typeName == "short" || typeName == "byte" || typeName == "boolean" || typeName == "float" || typeName == "double" || typeName == "char" {
+			v, err := p.varLong()
+			if err != nil {
+				fmt.Fprintf(&buf, "    %s: <err: %v>\n", f.Name, err)
+				break
+			}
+			fmt.Fprintf(&buf, "    %s: %d (type=%s)\n", f.Name, v, typeName)
+		} else if typeName == "java.lang.String" {
+			s, err := p.string()
+			if err != nil {
+				fmt.Fprintf(&buf, "    %s: <err: %v>\n", f.Name, err)
+				break
+			}
+			fmt.Fprintf(&buf, "    %s: %q (type=string)\n", f.Name, s)
+		} else {
+			fmt.Fprintf(&buf, "    %s: <unknown type %s>\n", f.Name, typeName)
+			break
+		}
+	}
+	remaining := eventEnd - p.pos
+	fmt.Fprintf(&buf, "    pos after fields: %d, eventEnd: %d, remaining: %d\n", p.pos, eventEnd, remaining)
+	if remaining > 0 {
+		end := eventEnd
+		if end > len(p.buf) {
+			end = len(p.buf)
+		}
+		fmt.Fprintf(&buf, "    hexdump: %x\n", p.buf[p.pos:end])
+		embSize, err := p.varLong()
+		if err == nil {
+			embType, err := p.varLong()
+			if err == nil {
+				name := fmt.Sprintf("%d", def.TypeID(embType))
+				if c, ok := p.TypeMap.IDMap[def.TypeID(embType)]; ok {
+					name = c.Name
+				}
+				fmt.Fprintf(&buf, "    embedded? size=%d type=%s\n", embSize, name)
+			}
+		}
+	}
+
+	if p.DebugTraceAll || (remaining > 0 && !p.debugFoundRemaining) {
+		if remaining > 0 {
+			p.debugFoundRemaining = true
+		}
+		fmt.Fprint(p.DebugFile, buf.String())
 	}
 }
 
@@ -391,11 +531,22 @@ func (p *Parser) string() (string, error) {
 	}
 	b := p.buf[p.pos]
 	p.pos++
-	switch b { //todo implement 2
+	switch b {
 	case 0:
 		return "", nil //todo this should be nil
 	case 1:
 		return "", nil
+	case 2:
+		// Constant pool reference — read the key and resolve the string.
+		key, err := p.varLong()
+		if err != nil {
+			return "", err
+		}
+		idx, ok := p.Strings.IDMap[types2.StringRef(key)]
+		if !ok {
+			return "", nil
+		}
+		return p.Strings.String[idx].String, nil
 	case 3:
 		bs, err := p.bytes()
 		if err != nil {

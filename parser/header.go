@@ -40,5 +40,6 @@ func (p *Parser) readChunkHeader(pos int) error {
 	}
 	p.header = h
 	p.chunkEnd = pos + h.Size
+	fmt.Printf("readChunkHeader pos=%d %s\n", pos, h.String())
 	return nil
 }
