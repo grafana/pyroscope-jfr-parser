@@ -10,13 +10,14 @@ import (
 )
 
 func TestParseReproducer(t *testing.T) {
-	const path = "/tmp/reproducer.jfr"
+	// todo do not USE /tmp as it may collide with other agents
+	const path = "./reproducer-jvm.jfr"
 	data, err := os.ReadFile(path)
 	if err != nil {
 		t.Skip("test file not available:", err)
 	}
 
-	debugFile, err := os.Create("/tmp/jfr-reproducer-events.txt")
+	debugFile, err := os.Create("./jfr-reproducer-events.txt")
 	if err != nil {
 		t.Fatal(err)
 	}
