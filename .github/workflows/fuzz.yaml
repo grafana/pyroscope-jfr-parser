@@ -20,5 +20,9 @@ jobs:
         uses: actions/setup-go@4b73464bb391d4059bd26b0524d20df3927bd417 # v6.3.0
         with:
           go-version: 1.24
+      - name: Prepare fuzz corpus
+        run: make -C internal/cmd/fuzz corpus
+      - name: Build fuzzer
+        run: make -C internal/cmd/fuzz
       - name: Fuzz
-        run: FUZZ_TIME=4h make fuzz
+        run: cd internal/cmd/fuzz && ./fuzz ../../../fuzz-corpus -max_total_time=14400 -rss_limit_mb=0 -timeout=100000
