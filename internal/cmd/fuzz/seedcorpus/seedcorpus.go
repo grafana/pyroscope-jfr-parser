@@ -2,6 +2,7 @@ package seedcorpus
 
 import (
 	"compress/gzip"
+	"encoding/binary"
 	"fmt"
 	"io"
 	"os"
@@ -9,39 +10,42 @@ import (
 	"strings"
 )
 
-// Extract decompresses a single .jfr.gz file into destDir.
-// Returns the output file path.
-func Extract(gzPath string, destDir string) (string, error) {
+// extract decompresses a .jfr.gz file and returns the raw JFR bytes.
+func extract(gzPath string) ([]byte, error) {
 	f, err := os.Open(gzPath)
 	if err != nil {
-		return "", fmt.Errorf("open %s: %w", gzPath, err)
+		return nil, fmt.Errorf("open %s: %w", gzPath, err)
 	}
 	defer f.Close()
 
 	gr, err := gzip.NewReader(f)
 	if err != nil {
-		return "", fmt.Errorf("gzip reader %s: %w", gzPath, err)
+		return nil, fmt.Errorf("gzip reader %s: %w", gzPath, err)
 	}
 	defer gr.Close()
 
-	base := filepath.Base(gzPath)
-	name := strings.TrimSuffix(base, ".gz")
-	outPath := filepath.Join(destDir, name)
-
-	out, err := os.Create(outPath)
+	data, err := io.ReadAll(gr)
 	if err != nil {
-		return "", fmt.Errorf("create %s: %w", outPath, err)
+		return nil, fmt.Errorf("decompress %s: %w", gzPath, err)
 	}
-	defer out.Close()
+	return data, nil
+}
 
-	if _, err := io.Copy(out, gr); err != nil {
-		return "", fmt.Errorf("decompress %s: %w", gzPath, err)
-	}
-	return outPath, nil
+// EncodeFuzzInput wraps raw JFR bytes into the binary format expected by
+// LLVMFuzzerTestOneInput: flags(1B) + startTime(8B LE) + endTime(8B LE) +
+// sampleRate(8B LE) + jfrData.
+func EncodeFuzzInput(jfrData []byte) []byte {
+	header := make([]byte, 1+8+8+8)
+	header[0] = 0 // flags: no labels, no truncated frame
+	binary.LittleEndian.PutUint64(header[1:9], 1706241880000)
+	binary.LittleEndian.PutUint64(header[9:17], 1706241890000)
+	binary.LittleEndian.PutUint64(header[17:25], 100)
+	return append(header, jfrData...)
 }
 
 // Generate finds .jfr.gz files in srcDir that are at most maxCompressedSize
-// bytes and decompresses them into destDir using Extract.
+// bytes, decompresses them, wraps each in the fuzzer's binary input format,
+// and writes them to destDir.
 func Generate(srcDir string, destDir string, maxCompressedSize int64) error {
 	if err := os.MkdirAll(destDir, 0o755); err != nil {
 		return fmt.Errorf("mkdir %s: %w", destDir, err)
@@ -60,8 +64,18 @@ func Generate(srcDir string, destDir string, maxCompressedSize int64) error {
 		if info.Size() > maxCompressedSize {
 			continue
 		}
-		if _, err := Extract(m, destDir); err != nil {
+
+		jfrData, err := extract(m)
+		if err != nil {
 			return err
+		}
+
+		base := filepath.Base(m)
+		name := strings.TrimSuffix(base, ".gz")
+		outPath := filepath.Join(destDir, name)
+
+		if err := os.WriteFile(outPath, EncodeFuzzInput(jfrData), 0o644); err != nil {
+			return fmt.Errorf("write %s: %w", outPath, err)
 		}
 	}
 	return nil
