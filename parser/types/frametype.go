@@ -4,7 +4,6 @@ package types
 
 import (
 	"fmt"
-	"github.com/grafana/jfr-parser/parser/types/def"
 	"io"
 	"unsafe"
 )
@@ -15,17 +14,17 @@ type BindFrameType struct {
 }
 
 type BindFieldFrameType struct {
-	Field  *def.Field
+	Field  *Field
 	string *string
 }
 
-func NewBindFrameType(typ *def.Class, typeMap *def.TypeMap) *BindFrameType {
+func NewBindFrameType(typ *MetadataClass, typeMap *TypeMap) *BindFrameType {
 	res := new(BindFrameType)
 	res.Fields = make([]BindFieldFrameType, 0, len(typ.Fields))
 	for i := 0; i < len(typ.Fields); i++ {
 		switch typ.Fields[i].Name {
 		case "description":
-			if typ.Fields[i].Equals(&def.Field{Name: "description", Type: typeMap.T_STRING, ConstantPool: false, Array: false}) {
+			if typ.Fields[i].Equals(&Field{Name: "description", Type: typeMap.T_STRING, ConstantPool: false, Array: false}) {
 				res.Fields = append(res.Fields, BindFieldFrameType{Field: &typ.Fields[i], string: &res.Temp.Description})
 			} else {
 				res.Fields = append(res.Fields, BindFieldFrameType{Field: &typ.Fields[i]}) // skip changed field
@@ -51,7 +50,7 @@ func (this *FrameTypeList) Reset() {
 	this.IDMap = make(map[FrameTypeRef]uint32)
 	this.FrameType = nil
 }
-func (this *FrameTypeList) Parse(data []byte, bind *BindFrameType, typeMap *def.TypeMap) (pos int, err error) {
+func (this *FrameTypeList) Parse(data []byte, bind *BindFrameType, typeMap *TypeMap) (pos int, err error) {
 	var (
 		v64_  uint64
 		v32_  uint32
@@ -68,7 +67,7 @@ func (this *FrameTypeList) Parse(data []byte, bind *BindFrameType, typeMap *def.
 	v32_ = uint32(0)
 	for shift = uint(0); ; shift += 7 {
 		if shift >= 32 {
-			return 0, def.ErrIntOverflow
+			return 0, ErrIntOverflow
 		}
 		if pos >= l {
 			return 0, io.ErrUnexpectedEOF
@@ -109,7 +108,7 @@ func (this *FrameTypeList) Parse(data []byte, bind *BindFrameType, typeMap *def.
 				v32_ = uint32(0)
 				for shift = uint(0); ; shift += 7 {
 					if shift >= 32 {
-						return 0, def.ErrIntOverflow
+						return 0, ErrIntOverflow
 					}
 					if pos >= l {
 						return 0, io.ErrUnexpectedEOF
@@ -161,7 +160,7 @@ func (this *FrameTypeList) Parse(data []byte, bind *BindFrameType, typeMap *def.
 							v32_ = uint32(0)
 							for shift = uint(0); ; shift += 7 {
 								if shift >= 32 {
-									return 0, def.ErrIntOverflow
+									return 0, ErrIntOverflow
 								}
 								if pos >= l {
 									return 0, io.ErrUnexpectedEOF
@@ -183,7 +182,7 @@ func (this *FrameTypeList) Parse(data []byte, bind *BindFrameType, typeMap *def.
 							v32_ = uint32(0)
 							for shift = uint(0); ; shift += 7 {
 								if shift >= 32 {
-									return 0, def.ErrIntOverflow
+									return 0, ErrIntOverflow
 								}
 								if pos >= l {
 									return 0, io.ErrUnexpectedEOF
@@ -206,7 +205,7 @@ func (this *FrameTypeList) Parse(data []byte, bind *BindFrameType, typeMap *def.
 							v32_ = uint32(0)
 							for shift = uint(0); ; shift += 7 {
 								if shift >= 32 {
-									return 0, def.ErrIntOverflow
+									return 0, ErrIntOverflow
 								}
 								if pos >= l {
 									return 0, io.ErrUnexpectedEOF
@@ -224,7 +223,7 @@ func (this *FrameTypeList) Parse(data []byte, bind *BindFrameType, typeMap *def.
 								v32_ = uint32(0)
 								for shift = uint(0); ; shift += 7 {
 									if shift >= 32 {
-										return 0, def.ErrIntOverflow
+										return 0, ErrIntOverflow
 									}
 									if pos >= l {
 										return 0, io.ErrUnexpectedEOF
@@ -249,7 +248,7 @@ func (this *FrameTypeList) Parse(data []byte, bind *BindFrameType, typeMap *def.
 						v32_ = uint32(0)
 						for shift = uint(0); ; shift += 7 {
 							if shift >= 32 {
-								return 0, def.ErrIntOverflow
+								return 0, ErrIntOverflow
 							}
 							if pos >= l {
 								return 0, io.ErrUnexpectedEOF
@@ -285,7 +284,7 @@ func (this *FrameTypeList) Parse(data []byte, bind *BindFrameType, typeMap *def.
 						v16_ = uint16(0)
 						for shift = uint(0); ; shift += 7 {
 							if shift >= 16 {
-								return 0, def.ErrIntOverflow
+								return 0, ErrIntOverflow
 							}
 							if pos >= l {
 								return 0, io.ErrUnexpectedEOF
@@ -309,7 +308,7 @@ func (this *FrameTypeList) Parse(data []byte, bind *BindFrameType, typeMap *def.
 						v32_ = uint32(0)
 						for shift = uint(0); ; shift += 7 {
 							if shift >= 32 {
-								return 0, def.ErrIntOverflow
+								return 0, ErrIntOverflow
 							}
 							if pos >= l {
 								return 0, io.ErrUnexpectedEOF
@@ -332,7 +331,7 @@ func (this *FrameTypeList) Parse(data []byte, bind *BindFrameType, typeMap *def.
 							v32_ = uint32(0)
 							for shift = uint(0); ; shift += 7 {
 								if shift >= 32 {
-									return 0, def.ErrIntOverflow
+									return 0, ErrIntOverflow
 								}
 								if pos >= l {
 									return 0, io.ErrUnexpectedEOF
@@ -353,7 +352,7 @@ func (this *FrameTypeList) Parse(data []byte, bind *BindFrameType, typeMap *def.
 									v32_ = uint32(0)
 									for shift = uint(0); ; shift += 7 {
 										if shift >= 32 {
-											return 0, def.ErrIntOverflow
+											return 0, ErrIntOverflow
 										}
 										if pos >= l {
 											return 0, io.ErrUnexpectedEOF
@@ -381,7 +380,7 @@ func (this *FrameTypeList) Parse(data []byte, bind *BindFrameType, typeMap *def.
 										v32_ = uint32(0)
 										for shift = uint(0); ; shift += 7 {
 											if shift >= 32 {
-												return 0, def.ErrIntOverflow
+												return 0, ErrIntOverflow
 											}
 											if pos >= l {
 												return 0, io.ErrUnexpectedEOF
@@ -403,7 +402,7 @@ func (this *FrameTypeList) Parse(data []byte, bind *BindFrameType, typeMap *def.
 										v32_ = uint32(0)
 										for shift = uint(0); ; shift += 7 {
 											if shift >= 32 {
-												return 0, def.ErrIntOverflow
+												return 0, ErrIntOverflow
 											}
 											if pos >= l {
 												return 0, io.ErrUnexpectedEOF
@@ -426,7 +425,7 @@ func (this *FrameTypeList) Parse(data []byte, bind *BindFrameType, typeMap *def.
 										v32_ = uint32(0)
 										for shift = uint(0); ; shift += 7 {
 											if shift >= 32 {
-												return 0, def.ErrIntOverflow
+												return 0, ErrIntOverflow
 											}
 											if pos >= l {
 												return 0, io.ErrUnexpectedEOF
@@ -444,7 +443,7 @@ func (this *FrameTypeList) Parse(data []byte, bind *BindFrameType, typeMap *def.
 											v32_ = uint32(0)
 											for shift = uint(0); ; shift += 7 {
 												if shift >= 32 {
-													return 0, def.ErrIntOverflow
+													return 0, ErrIntOverflow
 												}
 												if pos >= l {
 													return 0, io.ErrUnexpectedEOF
@@ -466,7 +465,7 @@ func (this *FrameTypeList) Parse(data []byte, bind *BindFrameType, typeMap *def.
 									v32_ = uint32(0)
 									for shift = uint(0); ; shift += 7 {
 										if shift >= 32 {
-											return 0, def.ErrIntOverflow
+											return 0, ErrIntOverflow
 										}
 										if pos >= l {
 											return 0, io.ErrUnexpectedEOF
@@ -482,7 +481,7 @@ func (this *FrameTypeList) Parse(data []byte, bind *BindFrameType, typeMap *def.
 									v32_ = uint32(0)
 									for shift = uint(0); ; shift += 7 {
 										if shift >= 32 {
-											return 0, def.ErrIntOverflow
+											return 0, ErrIntOverflow
 										}
 										if pos >= l {
 											return 0, io.ErrUnexpectedEOF
@@ -516,7 +515,7 @@ func (this *FrameTypeList) Parse(data []byte, bind *BindFrameType, typeMap *def.
 									v16_ = uint16(0)
 									for shift = uint(0); ; shift += 7 {
 										if shift >= 16 {
-											return 0, def.ErrIntOverflow
+											return 0, ErrIntOverflow
 										}
 										if pos >= l {
 											return 0, io.ErrUnexpectedEOF

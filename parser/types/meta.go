@@ -1,4 +1,4 @@
-package def
+package types
 
 import (
 	"fmt"
@@ -8,13 +8,13 @@ import (
 var ErrIntOverflow = fmt.Errorf("int overflow")
 var ErrNameEmpty = fmt.Errorf("class/field name is empty")
 
-type Class struct {
+type MetadataClass struct {
 	Name   string
 	ID     TypeID
 	Fields []Field
 }
 
-func NewClass(attrs map[string]string, childCount int) (*Class, error) {
+func NewMetadataClass(attrs map[string]string, childCount int) (*MetadataClass, error) {
 	id, err := strconv.Atoi(attrs["id"])
 	if err != nil {
 		return nil, err
@@ -23,21 +23,21 @@ func NewClass(attrs map[string]string, childCount int) (*Class, error) {
 	if name == "" {
 		return nil, ErrNameEmpty
 	}
-	return &Class{
+	return &MetadataClass{
 		Name:   name,
 		ID:     TypeID(id),
 		Fields: make([]Field, 0, childCount),
 	}, nil
 }
 
-func (c *Class) String() string {
+func (c *MetadataClass) String() string {
 	if c == nil {
 		return "class{nil}"
 	}
 	return fmt.Sprintf("class{name: %s, id: %d, fields: %+v}", c.Name, c.ID, c.Fields)
 }
 
-func (c *Class) TrimLastField(fieldName string) []Field {
+func (c *MetadataClass) TrimLastField(fieldName string) []Field {
 	if len(c.Fields) > 0 && c.Fields[len(c.Fields)-1].Name == fieldName {
 		return c.Fields[:len(c.Fields)-1]
 	} else {
@@ -45,7 +45,7 @@ func (c *Class) TrimLastField(fieldName string) []Field {
 	}
 }
 
-func (c *Class) Field(name string) *Field {
+func (c *MetadataClass) Field(name string) *Field {
 	for i := range c.Fields {
 		if c.Fields[i].Name == name {
 			return &c.Fields[i]

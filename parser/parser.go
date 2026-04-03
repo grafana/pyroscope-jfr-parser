@@ -6,7 +6,6 @@ import (
 	"unsafe"
 
 	types2 "github.com/grafana/jfr-parser/parser/types"
-	"github.com/grafana/jfr-parser/parser/types/def"
 )
 
 const chunkHeaderSize = 68
@@ -68,7 +67,7 @@ type Parser struct {
 	metaSize uint32
 	chunkEnd int
 
-	TypeMap def.TypeMap
+	TypeMap types2.TypeMap
 
 	bindFrameType   *types2.BindFrameType
 	bindThreadState *types2.BindThreadState
@@ -105,19 +104,19 @@ func NewParser(buf []byte, options Options) *Parser {
 }
 
 func initEventType[B any](
-	cls *def.Class, typeID *def.TypeID, bind **B,
-	newBind func(*def.Class, *def.TypeMap) *B, typeMap *def.TypeMap,
+	cls *types2.MetadataClass, typeID *types2.TypeID, bind **B,
+	newBind func(*types2.MetadataClass, *types2.TypeMap) *B, typeMap *types2.TypeMap,
 ) {
 	if cls != nil {
 		*typeID = cls.ID
 		*bind = newBind(cls, typeMap)
 	} else {
-		*typeID = def.UnsetTypeID
+		*typeID = types2.UnsetTypeID
 		*bind = nil
 	}
 }
 
-func (p *Parser) ParseEvent() (def.TypeID, error) {
+func (p *Parser) ParseEvent() (types2.TypeID, error) {
 	for {
 		if p.pos == p.chunkEnd {
 			if p.pos == len(p.buf) {
@@ -133,7 +132,7 @@ func (p *Parser) ParseEvent() (def.TypeID, error) {
 			return 0, err
 		}
 		if size == 0 {
-			return 0, def.ErrIntOverflow
+			return 0, types2.ErrIntOverflow
 		}
 		if uint64(p.chunkEnd-pp) < size {
 			return 0, fmt.Errorf("invalid event size %d at position %d", size, pp)
@@ -144,10 +143,10 @@ func (p *Parser) ParseEvent() (def.TypeID, error) {
 		}
 		_ = size
 
-		ttyp := def.TypeID(typ)
+		ttyp := types2.TypeID(typ)
 		switch ttyp {
-		case def.UnsetTypeID:
-			return def.UnsetTypeID, fmt.Errorf("invalid event type %d at position %d", typ, pp)
+		case types2.UnsetTypeID:
+			return types2.UnsetTypeID, fmt.Errorf("invalid event type %d at position %d", typ, pp)
 		case p.TypeMap.T_EXECUTION_SAMPLE:
 			_, err = p.ExecutionSample.Parse(p.buf[p.pos:], p.bindExecutionSample, &p.TypeMap)
 		case p.TypeMap.T_WALL_CLOCK_SAMPLE:
@@ -175,7 +174,7 @@ func (p *Parser) ParseEvent() (def.TypeID, error) {
 			continue
 		}
 		if err != nil {
-			return def.UnsetTypeID, err
+			return types2.UnsetTypeID, err
 		}
 		p.pos = pp + int(size)
 		return ttyp, nil
@@ -273,7 +272,7 @@ func (p *Parser) varInt() (uint32, error) {
 	v := uint32(0)
 	for shift := uint(0); ; shift += 7 {
 		if shift >= 32 {
-			return 0, def.ErrIntOverflow
+			return 0, types2.ErrIntOverflow
 		}
 		if p.pos >= len(p.buf) {
 			return 0, io.ErrUnexpectedEOF
@@ -341,7 +340,7 @@ func (p *Parser) charArrayString() (string, error) {
 		return "", err
 	}
 	if l < 0 {
-		return "", def.ErrIntOverflow
+		return "", types2.ErrIntOverflow
 	}
 	buf := make([]rune, int(l))
 	for i := 0; i < int(l); i++ {
@@ -362,7 +361,7 @@ func (p *Parser) bytes() ([]byte, error) {
 		return nil, err
 	}
 	if l < 0 {
-		return nil, def.ErrIntOverflow
+		return nil, types2.ErrIntOverflow
 	}
 	if p.pos+int(l) > len(p.buf) {
 		return nil, io.ErrUnexpectedEOF
@@ -454,7 +453,7 @@ func (p *Parser) checkTypes() error {
 	if typeCPLogLevel != nil {
 		p.TypeMap.T_LOG_LEVEL = typeCPLogLevel.ID
 	} else {
-		p.TypeMap.T_LOG_LEVEL = def.UnsetTypeID
+		p.TypeMap.T_LOG_LEVEL = types2.UnsetTypeID
 	}
 	p.TypeMap.T_STACK_TRACE = typeCPStackTrace.ID
 	p.TypeMap.T_CLASS_LOADER = typeCPClassLoader.ID

@@ -4,7 +4,6 @@ package types
 
 import (
 	"fmt"
-	"github.com/grafana/jfr-parser/parser/types/def"
 	"io"
 	"unsafe"
 )
@@ -15,17 +14,17 @@ type BindPackage struct {
 }
 
 type BindFieldPackage struct {
-	Field     *def.Field
+	Field     *Field
 	SymbolRef *SymbolRef
 }
 
-func NewBindPackage(typ *def.Class, typeMap *def.TypeMap) *BindPackage {
+func NewBindPackage(typ *MetadataClass, typeMap *TypeMap) *BindPackage {
 	res := new(BindPackage)
 	res.Fields = make([]BindFieldPackage, 0, len(typ.Fields))
 	for i := 0; i < len(typ.Fields); i++ {
 		switch typ.Fields[i].Name {
 		case "name":
-			if typ.Fields[i].Equals(&def.Field{Name: "name", Type: typeMap.T_SYMBOL, ConstantPool: true, Array: false}) {
+			if typ.Fields[i].Equals(&Field{Name: "name", Type: typeMap.T_SYMBOL, ConstantPool: true, Array: false}) {
 				res.Fields = append(res.Fields, BindFieldPackage{Field: &typ.Fields[i], SymbolRef: &res.Temp.Name})
 			} else {
 				res.Fields = append(res.Fields, BindFieldPackage{Field: &typ.Fields[i]}) // skip changed field
@@ -51,7 +50,7 @@ func (this *PackageList) Reset() {
 	this.IDMap = make(map[PackageRef]uint32)
 	this.Package = nil
 }
-func (this *PackageList) Parse(data []byte, bind *BindPackage, typeMap *def.TypeMap) (pos int, err error) {
+func (this *PackageList) Parse(data []byte, bind *BindPackage, typeMap *TypeMap) (pos int, err error) {
 	var (
 		v64_  uint64
 		v32_  uint32
@@ -68,7 +67,7 @@ func (this *PackageList) Parse(data []byte, bind *BindPackage, typeMap *def.Type
 	v32_ = uint32(0)
 	for shift = uint(0); ; shift += 7 {
 		if shift >= 32 {
-			return 0, def.ErrIntOverflow
+			return 0, ErrIntOverflow
 		}
 		if pos >= l {
 			return 0, io.ErrUnexpectedEOF
@@ -109,7 +108,7 @@ func (this *PackageList) Parse(data []byte, bind *BindPackage, typeMap *def.Type
 				v32_ = uint32(0)
 				for shift = uint(0); ; shift += 7 {
 					if shift >= 32 {
-						return 0, def.ErrIntOverflow
+						return 0, ErrIntOverflow
 					}
 					if pos >= l {
 						return 0, io.ErrUnexpectedEOF
@@ -167,7 +166,7 @@ func (this *PackageList) Parse(data []byte, bind *BindPackage, typeMap *def.Type
 							v32_ = uint32(0)
 							for shift = uint(0); ; shift += 7 {
 								if shift >= 32 {
-									return 0, def.ErrIntOverflow
+									return 0, ErrIntOverflow
 								}
 								if pos >= l {
 									return 0, io.ErrUnexpectedEOF
@@ -189,7 +188,7 @@ func (this *PackageList) Parse(data []byte, bind *BindPackage, typeMap *def.Type
 							v32_ = uint32(0)
 							for shift = uint(0); ; shift += 7 {
 								if shift >= 32 {
-									return 0, def.ErrIntOverflow
+									return 0, ErrIntOverflow
 								}
 								if pos >= l {
 									return 0, io.ErrUnexpectedEOF
@@ -212,7 +211,7 @@ func (this *PackageList) Parse(data []byte, bind *BindPackage, typeMap *def.Type
 							v32_ = uint32(0)
 							for shift = uint(0); ; shift += 7 {
 								if shift >= 32 {
-									return 0, def.ErrIntOverflow
+									return 0, ErrIntOverflow
 								}
 								if pos >= l {
 									return 0, io.ErrUnexpectedEOF
@@ -230,7 +229,7 @@ func (this *PackageList) Parse(data []byte, bind *BindPackage, typeMap *def.Type
 								v32_ = uint32(0)
 								for shift = uint(0); ; shift += 7 {
 									if shift >= 32 {
-										return 0, def.ErrIntOverflow
+										return 0, ErrIntOverflow
 									}
 									if pos >= l {
 										return 0, io.ErrUnexpectedEOF
@@ -253,7 +252,7 @@ func (this *PackageList) Parse(data []byte, bind *BindPackage, typeMap *def.Type
 						v32_ = uint32(0)
 						for shift = uint(0); ; shift += 7 {
 							if shift >= 32 {
-								return 0, def.ErrIntOverflow
+								return 0, ErrIntOverflow
 							}
 							if pos >= l {
 								return 0, io.ErrUnexpectedEOF
@@ -289,7 +288,7 @@ func (this *PackageList) Parse(data []byte, bind *BindPackage, typeMap *def.Type
 						v16_ = uint16(0)
 						for shift = uint(0); ; shift += 7 {
 							if shift >= 16 {
-								return 0, def.ErrIntOverflow
+								return 0, ErrIntOverflow
 							}
 							if pos >= l {
 								return 0, io.ErrUnexpectedEOF
@@ -313,7 +312,7 @@ func (this *PackageList) Parse(data []byte, bind *BindPackage, typeMap *def.Type
 						v32_ = uint32(0)
 						for shift = uint(0); ; shift += 7 {
 							if shift >= 32 {
-								return 0, def.ErrIntOverflow
+								return 0, ErrIntOverflow
 							}
 							if pos >= l {
 								return 0, io.ErrUnexpectedEOF
@@ -336,7 +335,7 @@ func (this *PackageList) Parse(data []byte, bind *BindPackage, typeMap *def.Type
 							v32_ = uint32(0)
 							for shift = uint(0); ; shift += 7 {
 								if shift >= 32 {
-									return 0, def.ErrIntOverflow
+									return 0, ErrIntOverflow
 								}
 								if pos >= l {
 									return 0, io.ErrUnexpectedEOF
@@ -357,7 +356,7 @@ func (this *PackageList) Parse(data []byte, bind *BindPackage, typeMap *def.Type
 									v32_ = uint32(0)
 									for shift = uint(0); ; shift += 7 {
 										if shift >= 32 {
-											return 0, def.ErrIntOverflow
+											return 0, ErrIntOverflow
 										}
 										if pos >= l {
 											return 0, io.ErrUnexpectedEOF
@@ -385,7 +384,7 @@ func (this *PackageList) Parse(data []byte, bind *BindPackage, typeMap *def.Type
 										v32_ = uint32(0)
 										for shift = uint(0); ; shift += 7 {
 											if shift >= 32 {
-												return 0, def.ErrIntOverflow
+												return 0, ErrIntOverflow
 											}
 											if pos >= l {
 												return 0, io.ErrUnexpectedEOF
@@ -407,7 +406,7 @@ func (this *PackageList) Parse(data []byte, bind *BindPackage, typeMap *def.Type
 										v32_ = uint32(0)
 										for shift = uint(0); ; shift += 7 {
 											if shift >= 32 {
-												return 0, def.ErrIntOverflow
+												return 0, ErrIntOverflow
 											}
 											if pos >= l {
 												return 0, io.ErrUnexpectedEOF
@@ -430,7 +429,7 @@ func (this *PackageList) Parse(data []byte, bind *BindPackage, typeMap *def.Type
 										v32_ = uint32(0)
 										for shift = uint(0); ; shift += 7 {
 											if shift >= 32 {
-												return 0, def.ErrIntOverflow
+												return 0, ErrIntOverflow
 											}
 											if pos >= l {
 												return 0, io.ErrUnexpectedEOF
@@ -448,7 +447,7 @@ func (this *PackageList) Parse(data []byte, bind *BindPackage, typeMap *def.Type
 											v32_ = uint32(0)
 											for shift = uint(0); ; shift += 7 {
 												if shift >= 32 {
-													return 0, def.ErrIntOverflow
+													return 0, ErrIntOverflow
 												}
 												if pos >= l {
 													return 0, io.ErrUnexpectedEOF
@@ -470,7 +469,7 @@ func (this *PackageList) Parse(data []byte, bind *BindPackage, typeMap *def.Type
 									v32_ = uint32(0)
 									for shift = uint(0); ; shift += 7 {
 										if shift >= 32 {
-											return 0, def.ErrIntOverflow
+											return 0, ErrIntOverflow
 										}
 										if pos >= l {
 											return 0, io.ErrUnexpectedEOF
@@ -486,7 +485,7 @@ func (this *PackageList) Parse(data []byte, bind *BindPackage, typeMap *def.Type
 									v32_ = uint32(0)
 									for shift = uint(0); ; shift += 7 {
 										if shift >= 32 {
-											return 0, def.ErrIntOverflow
+											return 0, ErrIntOverflow
 										}
 										if pos >= l {
 											return 0, io.ErrUnexpectedEOF
@@ -520,7 +519,7 @@ func (this *PackageList) Parse(data []byte, bind *BindPackage, typeMap *def.Type
 									v16_ = uint16(0)
 									for shift = uint(0); ; shift += 7 {
 										if shift >= 16 {
-											return 0, def.ErrIntOverflow
+											return 0, ErrIntOverflow
 										}
 										if pos >= l {
 											return 0, io.ErrUnexpectedEOF

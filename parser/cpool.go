@@ -3,8 +3,7 @@ package parser
 import (
 	"fmt"
 
-	"github.com/grafana/jfr-parser/parser/types"
-	"github.com/grafana/jfr-parser/parser/types/def"
+	types2 "github.com/grafana/jfr-parser/parser/types"
 )
 
 func (p *Parser) readConstantPool(pos int) error {
@@ -54,9 +53,9 @@ func (p *Parser) readConstantPool(pos int) error {
 			if err != nil {
 				return err
 			}
-			c := p.TypeMap.IDMap[def.TypeID(typ)]
+			c := p.TypeMap.IDMap[types2.TypeID(typ)]
 			if c == nil {
-				return fmt.Errorf("unknown type %d", def.TypeID(typ))
+				return fmt.Errorf("unknown type %d", types2.TypeID(typ))
 			}
 			err = p.readConstants(c)
 			if err != nil {
@@ -75,7 +74,7 @@ func (p *Parser) readConstantPool(pos int) error {
 	return nil
 }
 
-func (p *Parser) readConstants(c *def.Class) error {
+func (p *Parser) readConstants(c *types2.MetadataClass) error {
 	switch c.Name {
 	case "jdk.types.ChunkHeader":
 		p.pos += chunkHeaderSize
@@ -124,8 +123,8 @@ func (p *Parser) readConstants(c *def.Class) error {
 		p.pos += o
 		return err
 	default:
-		b := types.NewBindSkipConstantPool(c, &p.TypeMap)
-		skipper := types.SkipConstantPoolList{}
+		b := types2.NewBindSkipConstantPool(c, &p.TypeMap)
+		skipper := types2.SkipConstantPoolList{}
 		o, err := skipper.Parse(p.buf[p.pos:], b, &p.TypeMap)
 		p.pos += o
 		return err

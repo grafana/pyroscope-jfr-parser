@@ -1,4 +1,4 @@
-package def
+package types
 
 import "golang.org/x/text/encoding"
 
@@ -7,8 +7,8 @@ type TypeID int64
 const UnsetTypeID TypeID = -1
 
 type TypeMap struct {
-	IDMap   map[TypeID]*Class
-	NameMap map[string]*Class
+	IDMap   map[TypeID]*MetadataClass
+	NameMap map[string]*MetadataClass
 
 	T_STRING  TypeID
 	T_INT     TypeID

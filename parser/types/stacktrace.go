@@ -4,7 +4,6 @@ package types
 
 import (
 	"fmt"
-	"github.com/grafana/jfr-parser/parser/types/def"
 	"io"
 	"unsafe"
 )
@@ -15,24 +14,24 @@ type BindStackTrace struct {
 }
 
 type BindFieldStackTrace struct {
-	Field      *def.Field
+	Field      *Field
 	bool       *bool
 	StackFrame *[]StackFrame
 }
 
-func NewBindStackTrace(typ *def.Class, typeMap *def.TypeMap) *BindStackTrace {
+func NewBindStackTrace(typ *MetadataClass, typeMap *TypeMap) *BindStackTrace {
 	res := new(BindStackTrace)
 	res.Fields = make([]BindFieldStackTrace, 0, len(typ.Fields))
 	for i := 0; i < len(typ.Fields); i++ {
 		switch typ.Fields[i].Name {
 		case "truncated":
-			if typ.Fields[i].Equals(&def.Field{Name: "truncated", Type: typeMap.T_BOOLEAN, ConstantPool: false, Array: false}) {
+			if typ.Fields[i].Equals(&Field{Name: "truncated", Type: typeMap.T_BOOLEAN, ConstantPool: false, Array: false}) {
 				res.Fields = append(res.Fields, BindFieldStackTrace{Field: &typ.Fields[i], bool: &res.Temp.Truncated})
 			} else {
 				res.Fields = append(res.Fields, BindFieldStackTrace{Field: &typ.Fields[i]}) // skip changed field
 			}
 		case "frames":
-			if typ.Fields[i].Equals(&def.Field{Name: "frames", Type: typeMap.T_STACK_FRAME, ConstantPool: false, Array: true}) {
+			if typ.Fields[i].Equals(&Field{Name: "frames", Type: typeMap.T_STACK_FRAME, ConstantPool: false, Array: true}) {
 				res.Fields = append(res.Fields, BindFieldStackTrace{Field: &typ.Fields[i], StackFrame: &res.Temp.Frames})
 			} else {
 				res.Fields = append(res.Fields, BindFieldStackTrace{Field: &typ.Fields[i]}) // skip changed field
@@ -59,7 +58,7 @@ func (this *StackTraceList) Reset() {
 	this.IDMap = make(map[StackTraceRef]uint32)
 	this.StackTrace = nil
 }
-func (this *StackTraceList) Parse(data []byte, bind *BindStackTrace, bindStackFrame *BindStackFrame, typeMap *def.TypeMap) (pos int, err error) {
+func (this *StackTraceList) Parse(data []byte, bind *BindStackTrace, bindStackFrame *BindStackFrame, typeMap *TypeMap) (pos int, err error) {
 	var (
 		v64_  uint64
 		v32_  uint32
@@ -76,7 +75,7 @@ func (this *StackTraceList) Parse(data []byte, bind *BindStackTrace, bindStackFr
 	v32_ = uint32(0)
 	for shift = uint(0); ; shift += 7 {
 		if shift >= 32 {
-			return 0, def.ErrIntOverflow
+			return 0, ErrIntOverflow
 		}
 		if pos >= l {
 			return 0, io.ErrUnexpectedEOF
@@ -117,7 +116,7 @@ func (this *StackTraceList) Parse(data []byte, bind *BindStackTrace, bindStackFr
 				v32_ = uint32(0)
 				for shift = uint(0); ; shift += 7 {
 					if shift >= 32 {
-						return 0, def.ErrIntOverflow
+						return 0, ErrIntOverflow
 					}
 					if pos >= l {
 						return 0, io.ErrUnexpectedEOF
@@ -172,7 +171,7 @@ func (this *StackTraceList) Parse(data []byte, bind *BindStackTrace, bindStackFr
 							v32_ = uint32(0)
 							for shift = uint(0); ; shift += 7 {
 								if shift >= 32 {
-									return 0, def.ErrIntOverflow
+									return 0, ErrIntOverflow
 								}
 								if pos >= l {
 									return 0, io.ErrUnexpectedEOF
@@ -194,7 +193,7 @@ func (this *StackTraceList) Parse(data []byte, bind *BindStackTrace, bindStackFr
 							v32_ = uint32(0)
 							for shift = uint(0); ; shift += 7 {
 								if shift >= 32 {
-									return 0, def.ErrIntOverflow
+									return 0, ErrIntOverflow
 								}
 								if pos >= l {
 									return 0, io.ErrUnexpectedEOF
@@ -217,7 +216,7 @@ func (this *StackTraceList) Parse(data []byte, bind *BindStackTrace, bindStackFr
 							v32_ = uint32(0)
 							for shift = uint(0); ; shift += 7 {
 								if shift >= 32 {
-									return 0, def.ErrIntOverflow
+									return 0, ErrIntOverflow
 								}
 								if pos >= l {
 									return 0, io.ErrUnexpectedEOF
@@ -235,7 +234,7 @@ func (this *StackTraceList) Parse(data []byte, bind *BindStackTrace, bindStackFr
 								v32_ = uint32(0)
 								for shift = uint(0); ; shift += 7 {
 									if shift >= 32 {
-										return 0, def.ErrIntOverflow
+										return 0, ErrIntOverflow
 									}
 									if pos >= l {
 										return 0, io.ErrUnexpectedEOF
@@ -258,7 +257,7 @@ func (this *StackTraceList) Parse(data []byte, bind *BindStackTrace, bindStackFr
 						v32_ = uint32(0)
 						for shift = uint(0); ; shift += 7 {
 							if shift >= 32 {
-								return 0, def.ErrIntOverflow
+								return 0, ErrIntOverflow
 							}
 							if pos >= l {
 								return 0, io.ErrUnexpectedEOF
@@ -294,7 +293,7 @@ func (this *StackTraceList) Parse(data []byte, bind *BindStackTrace, bindStackFr
 						v16_ = uint16(0)
 						for shift = uint(0); ; shift += 7 {
 							if shift >= 16 {
-								return 0, def.ErrIntOverflow
+								return 0, ErrIntOverflow
 							}
 							if pos >= l {
 								return 0, io.ErrUnexpectedEOF
@@ -320,7 +319,7 @@ func (this *StackTraceList) Parse(data []byte, bind *BindStackTrace, bindStackFr
 						v32_ = uint32(0)
 						for shift = uint(0); ; shift += 7 {
 							if shift >= 32 {
-								return 0, def.ErrIntOverflow
+								return 0, ErrIntOverflow
 							}
 							if pos >= l {
 								return 0, io.ErrUnexpectedEOF
@@ -340,7 +339,7 @@ func (this *StackTraceList) Parse(data []byte, bind *BindStackTrace, bindStackFr
 								v32_ = uint32(0)
 								for shift = uint(0); ; shift += 7 {
 									if shift >= 32 {
-										return 0, def.ErrIntOverflow
+										return 0, ErrIntOverflow
 									}
 									if pos >= l {
 										return 0, io.ErrUnexpectedEOF
@@ -402,7 +401,7 @@ func (this *StackTraceList) Parse(data []byte, bind *BindStackTrace, bindStackFr
 											v32_ = uint32(0)
 											for shift = uint(0); ; shift += 7 {
 												if shift >= 32 {
-													return 0, def.ErrIntOverflow
+													return 0, ErrIntOverflow
 												}
 												if pos >= l {
 													return 0, io.ErrUnexpectedEOF
@@ -424,7 +423,7 @@ func (this *StackTraceList) Parse(data []byte, bind *BindStackTrace, bindStackFr
 											v32_ = uint32(0)
 											for shift = uint(0); ; shift += 7 {
 												if shift >= 32 {
-													return 0, def.ErrIntOverflow
+													return 0, ErrIntOverflow
 												}
 												if pos >= l {
 													return 0, io.ErrUnexpectedEOF
@@ -447,7 +446,7 @@ func (this *StackTraceList) Parse(data []byte, bind *BindStackTrace, bindStackFr
 											v32_ = uint32(0)
 											for shift = uint(0); ; shift += 7 {
 												if shift >= 32 {
-													return 0, def.ErrIntOverflow
+													return 0, ErrIntOverflow
 												}
 												if pos >= l {
 													return 0, io.ErrUnexpectedEOF
@@ -465,7 +464,7 @@ func (this *StackTraceList) Parse(data []byte, bind *BindStackTrace, bindStackFr
 												v32_ = uint32(0)
 												for shift = uint(0); ; shift += 7 {
 													if shift >= 32 {
-														return 0, def.ErrIntOverflow
+														return 0, ErrIntOverflow
 													}
 													if pos >= l {
 														return 0, io.ErrUnexpectedEOF
@@ -488,7 +487,7 @@ func (this *StackTraceList) Parse(data []byte, bind *BindStackTrace, bindStackFr
 										v32_ = uint32(0)
 										for shift = uint(0); ; shift += 7 {
 											if shift >= 32 {
-												return 0, def.ErrIntOverflow
+												return 0, ErrIntOverflow
 											}
 											if pos >= l {
 												return 0, io.ErrUnexpectedEOF
@@ -526,7 +525,7 @@ func (this *StackTraceList) Parse(data []byte, bind *BindStackTrace, bindStackFr
 										v16_ = uint16(0)
 										for shift = uint(0); ; shift += 7 {
 											if shift >= 16 {
-												return 0, def.ErrIntOverflow
+												return 0, ErrIntOverflow
 											}
 											if pos >= l {
 												return 0, io.ErrUnexpectedEOF
@@ -550,7 +549,7 @@ func (this *StackTraceList) Parse(data []byte, bind *BindStackTrace, bindStackFr
 										v32_ = uint32(0)
 										for shift = uint(0); ; shift += 7 {
 											if shift >= 32 {
-												return 0, def.ErrIntOverflow
+												return 0, ErrIntOverflow
 											}
 											if pos >= l {
 												return 0, io.ErrUnexpectedEOF
@@ -573,7 +572,7 @@ func (this *StackTraceList) Parse(data []byte, bind *BindStackTrace, bindStackFr
 											v32_ = uint32(0)
 											for shift = uint(0); ; shift += 7 {
 												if shift >= 32 {
-													return 0, def.ErrIntOverflow
+													return 0, ErrIntOverflow
 												}
 												if pos >= l {
 													return 0, io.ErrUnexpectedEOF
@@ -594,7 +593,7 @@ func (this *StackTraceList) Parse(data []byte, bind *BindStackTrace, bindStackFr
 													v32_ = uint32(0)
 													for shift = uint(0); ; shift += 7 {
 														if shift >= 32 {
-															return 0, def.ErrIntOverflow
+															return 0, ErrIntOverflow
 														}
 														if pos >= l {
 															return 0, io.ErrUnexpectedEOF
@@ -622,7 +621,7 @@ func (this *StackTraceList) Parse(data []byte, bind *BindStackTrace, bindStackFr
 														v32_ = uint32(0)
 														for shift = uint(0); ; shift += 7 {
 															if shift >= 32 {
-																return 0, def.ErrIntOverflow
+																return 0, ErrIntOverflow
 															}
 															if pos >= l {
 																return 0, io.ErrUnexpectedEOF
@@ -644,7 +643,7 @@ func (this *StackTraceList) Parse(data []byte, bind *BindStackTrace, bindStackFr
 														v32_ = uint32(0)
 														for shift = uint(0); ; shift += 7 {
 															if shift >= 32 {
-																return 0, def.ErrIntOverflow
+																return 0, ErrIntOverflow
 															}
 															if pos >= l {
 																return 0, io.ErrUnexpectedEOF
@@ -667,7 +666,7 @@ func (this *StackTraceList) Parse(data []byte, bind *BindStackTrace, bindStackFr
 														v32_ = uint32(0)
 														for shift = uint(0); ; shift += 7 {
 															if shift >= 32 {
-																return 0, def.ErrIntOverflow
+																return 0, ErrIntOverflow
 															}
 															if pos >= l {
 																return 0, io.ErrUnexpectedEOF
@@ -685,7 +684,7 @@ func (this *StackTraceList) Parse(data []byte, bind *BindStackTrace, bindStackFr
 															v32_ = uint32(0)
 															for shift = uint(0); ; shift += 7 {
 																if shift >= 32 {
-																	return 0, def.ErrIntOverflow
+																	return 0, ErrIntOverflow
 																}
 																if pos >= l {
 																	return 0, io.ErrUnexpectedEOF
@@ -707,7 +706,7 @@ func (this *StackTraceList) Parse(data []byte, bind *BindStackTrace, bindStackFr
 													v32_ = uint32(0)
 													for shift = uint(0); ; shift += 7 {
 														if shift >= 32 {
-															return 0, def.ErrIntOverflow
+															return 0, ErrIntOverflow
 														}
 														if pos >= l {
 															return 0, io.ErrUnexpectedEOF
@@ -723,7 +722,7 @@ func (this *StackTraceList) Parse(data []byte, bind *BindStackTrace, bindStackFr
 													v32_ = uint32(0)
 													for shift = uint(0); ; shift += 7 {
 														if shift >= 32 {
-															return 0, def.ErrIntOverflow
+															return 0, ErrIntOverflow
 														}
 														if pos >= l {
 															return 0, io.ErrUnexpectedEOF
@@ -757,7 +756,7 @@ func (this *StackTraceList) Parse(data []byte, bind *BindStackTrace, bindStackFr
 													v16_ = uint16(0)
 													for shift = uint(0); ; shift += 7 {
 														if shift >= 16 {
-															return 0, def.ErrIntOverflow
+															return 0, ErrIntOverflow
 														}
 														if pos >= l {
 															return 0, io.ErrUnexpectedEOF
@@ -797,7 +796,7 @@ func (this *StackTraceList) Parse(data []byte, bind *BindStackTrace, bindStackFr
 							v32_ = uint32(0)
 							for shift = uint(0); ; shift += 7 {
 								if shift >= 32 {
-									return 0, def.ErrIntOverflow
+									return 0, ErrIntOverflow
 								}
 								if pos >= l {
 									return 0, io.ErrUnexpectedEOF
@@ -818,7 +817,7 @@ func (this *StackTraceList) Parse(data []byte, bind *BindStackTrace, bindStackFr
 									v32_ = uint32(0)
 									for shift = uint(0); ; shift += 7 {
 										if shift >= 32 {
-											return 0, def.ErrIntOverflow
+											return 0, ErrIntOverflow
 										}
 										if pos >= l {
 											return 0, io.ErrUnexpectedEOF
@@ -846,7 +845,7 @@ func (this *StackTraceList) Parse(data []byte, bind *BindStackTrace, bindStackFr
 										v32_ = uint32(0)
 										for shift = uint(0); ; shift += 7 {
 											if shift >= 32 {
-												return 0, def.ErrIntOverflow
+												return 0, ErrIntOverflow
 											}
 											if pos >= l {
 												return 0, io.ErrUnexpectedEOF
@@ -868,7 +867,7 @@ func (this *StackTraceList) Parse(data []byte, bind *BindStackTrace, bindStackFr
 										v32_ = uint32(0)
 										for shift = uint(0); ; shift += 7 {
 											if shift >= 32 {
-												return 0, def.ErrIntOverflow
+												return 0, ErrIntOverflow
 											}
 											if pos >= l {
 												return 0, io.ErrUnexpectedEOF
@@ -891,7 +890,7 @@ func (this *StackTraceList) Parse(data []byte, bind *BindStackTrace, bindStackFr
 										v32_ = uint32(0)
 										for shift = uint(0); ; shift += 7 {
 											if shift >= 32 {
-												return 0, def.ErrIntOverflow
+												return 0, ErrIntOverflow
 											}
 											if pos >= l {
 												return 0, io.ErrUnexpectedEOF
@@ -909,7 +908,7 @@ func (this *StackTraceList) Parse(data []byte, bind *BindStackTrace, bindStackFr
 											v32_ = uint32(0)
 											for shift = uint(0); ; shift += 7 {
 												if shift >= 32 {
-													return 0, def.ErrIntOverflow
+													return 0, ErrIntOverflow
 												}
 												if pos >= l {
 													return 0, io.ErrUnexpectedEOF
@@ -931,7 +930,7 @@ func (this *StackTraceList) Parse(data []byte, bind *BindStackTrace, bindStackFr
 									v32_ = uint32(0)
 									for shift = uint(0); ; shift += 7 {
 										if shift >= 32 {
-											return 0, def.ErrIntOverflow
+											return 0, ErrIntOverflow
 										}
 										if pos >= l {
 											return 0, io.ErrUnexpectedEOF
@@ -947,7 +946,7 @@ func (this *StackTraceList) Parse(data []byte, bind *BindStackTrace, bindStackFr
 									v32_ = uint32(0)
 									for shift = uint(0); ; shift += 7 {
 										if shift >= 32 {
-											return 0, def.ErrIntOverflow
+											return 0, ErrIntOverflow
 										}
 										if pos >= l {
 											return 0, io.ErrUnexpectedEOF
@@ -981,7 +980,7 @@ func (this *StackTraceList) Parse(data []byte, bind *BindStackTrace, bindStackFr
 									v16_ = uint16(0)
 									for shift = uint(0); ; shift += 7 {
 										if shift >= 16 {
-											return 0, def.ErrIntOverflow
+											return 0, ErrIntOverflow
 										}
 										if pos >= l {
 											return 0, io.ErrUnexpectedEOF

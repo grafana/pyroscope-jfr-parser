@@ -4,7 +4,6 @@ package types
 
 import (
 	"fmt"
-	"github.com/grafana/jfr-parser/parser/types/def"
 	"io"
 	"unsafe"
 )
@@ -15,10 +14,10 @@ type BindString struct {
 }
 
 type BindFieldString struct {
-	Field *def.Field
+	Field *Field
 }
 
-func NewBindString(typ *def.Class, typeMap *def.TypeMap) *BindString {
+func NewBindString(typ *MetadataClass, typeMap *TypeMap) *BindString {
 	res := new(BindString)
 	res.Fields = make([]BindFieldString, 0, len(typ.Fields))
 	for i := 0; i < len(typ.Fields); i++ {
@@ -44,7 +43,7 @@ func (this *StringList) Reset() {
 	this.IDMap = make(map[StringRef]uint32)
 	this.String = nil
 }
-func (this *StringList) Parse(data []byte, bind *BindString, typeMap *def.TypeMap) (pos int, err error) {
+func (this *StringList) Parse(data []byte, bind *BindString, typeMap *TypeMap) (pos int, err error) {
 	var (
 		v64_  uint64
 		v32_  uint32
@@ -61,7 +60,7 @@ func (this *StringList) Parse(data []byte, bind *BindString, typeMap *def.TypeMa
 	v32_ = uint32(0)
 	for shift = uint(0); ; shift += 7 {
 		if shift >= 32 {
-			return 0, def.ErrIntOverflow
+			return 0, ErrIntOverflow
 		}
 		if pos >= l {
 			return 0, io.ErrUnexpectedEOF
@@ -111,7 +110,7 @@ func (this *StringList) Parse(data []byte, bind *BindString, typeMap *def.TypeMa
 			v32_ = uint32(0)
 			for shift = uint(0); ; shift += 7 {
 				if shift >= 32 {
-					return 0, def.ErrIntOverflow
+					return 0, ErrIntOverflow
 				}
 				if pos >= l {
 					return 0, io.ErrUnexpectedEOF
@@ -133,7 +132,7 @@ func (this *StringList) Parse(data []byte, bind *BindString, typeMap *def.TypeMa
 			v32_ = uint32(0)
 			for shift = uint(0); ; shift += 7 {
 				if shift >= 32 {
-					return 0, def.ErrIntOverflow
+					return 0, ErrIntOverflow
 				}
 				if pos >= l {
 					return 0, io.ErrUnexpectedEOF
@@ -156,7 +155,7 @@ func (this *StringList) Parse(data []byte, bind *BindString, typeMap *def.TypeMa
 			v32_ = uint32(0)
 			for shift = uint(0); ; shift += 7 {
 				if shift >= 32 {
-					return 0, def.ErrIntOverflow
+					return 0, ErrIntOverflow
 				}
 				if pos >= l {
 					return 0, io.ErrUnexpectedEOF
@@ -174,7 +173,7 @@ func (this *StringList) Parse(data []byte, bind *BindString, typeMap *def.TypeMa
 				v32_ = uint32(0)
 				for shift = uint(0); ; shift += 7 {
 					if shift >= 32 {
-						return 0, def.ErrIntOverflow
+						return 0, ErrIntOverflow
 					}
 					if pos >= l {
 						return 0, io.ErrUnexpectedEOF

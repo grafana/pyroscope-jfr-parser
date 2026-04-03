@@ -4,7 +4,6 @@ package types
 
 import (
 	"fmt"
-	"github.com/grafana/jfr-parser/parser/types/def"
 	"io"
 	"unsafe"
 )
@@ -15,74 +14,74 @@ type BindJavaMonitorEnter struct {
 }
 
 type BindFieldJavaMonitorEnter struct {
-	Field         *def.Field
+	Field         *Field
 	uint64        *uint64
 	ThreadRef     *ThreadRef
 	StackTraceRef *StackTraceRef
 	ClassRef      *ClassRef
 }
 
-func NewBindJavaMonitorEnter(typ *def.Class, typeMap *def.TypeMap) *BindJavaMonitorEnter {
+func NewBindJavaMonitorEnter(typ *MetadataClass, typeMap *TypeMap) *BindJavaMonitorEnter {
 	res := new(BindJavaMonitorEnter)
 	res.Fields = make([]BindFieldJavaMonitorEnter, 0, len(typ.Fields))
 	for i := 0; i < len(typ.Fields); i++ {
 		switch typ.Fields[i].Name {
 		case "startTime":
-			if typ.Fields[i].Equals(&def.Field{Name: "startTime", Type: typeMap.T_LONG, ConstantPool: false, Array: false}) {
+			if typ.Fields[i].Equals(&Field{Name: "startTime", Type: typeMap.T_LONG, ConstantPool: false, Array: false}) {
 				res.Fields = append(res.Fields, BindFieldJavaMonitorEnter{Field: &typ.Fields[i], uint64: &res.Temp.StartTime})
 			} else {
 				res.Fields = append(res.Fields, BindFieldJavaMonitorEnter{Field: &typ.Fields[i]}) // skip changed field
 			}
 		case "duration":
-			if typ.Fields[i].Equals(&def.Field{Name: "duration", Type: typeMap.T_LONG, ConstantPool: false, Array: false}) {
+			if typ.Fields[i].Equals(&Field{Name: "duration", Type: typeMap.T_LONG, ConstantPool: false, Array: false}) {
 				res.Fields = append(res.Fields, BindFieldJavaMonitorEnter{Field: &typ.Fields[i], uint64: &res.Temp.Duration})
 			} else {
 				res.Fields = append(res.Fields, BindFieldJavaMonitorEnter{Field: &typ.Fields[i]}) // skip changed field
 			}
 		case "eventThread":
-			if typ.Fields[i].Equals(&def.Field{Name: "eventThread", Type: typeMap.T_THREAD, ConstantPool: true, Array: false}) {
+			if typ.Fields[i].Equals(&Field{Name: "eventThread", Type: typeMap.T_THREAD, ConstantPool: true, Array: false}) {
 				res.Fields = append(res.Fields, BindFieldJavaMonitorEnter{Field: &typ.Fields[i], ThreadRef: &res.Temp.EventThread})
 			} else {
 				res.Fields = append(res.Fields, BindFieldJavaMonitorEnter{Field: &typ.Fields[i]}) // skip changed field
 			}
 		case "stackTrace":
-			if typ.Fields[i].Equals(&def.Field{Name: "stackTrace", Type: typeMap.T_STACK_TRACE, ConstantPool: true, Array: false}) {
+			if typ.Fields[i].Equals(&Field{Name: "stackTrace", Type: typeMap.T_STACK_TRACE, ConstantPool: true, Array: false}) {
 				res.Fields = append(res.Fields, BindFieldJavaMonitorEnter{Field: &typ.Fields[i], StackTraceRef: &res.Temp.StackTrace})
 			} else {
 				res.Fields = append(res.Fields, BindFieldJavaMonitorEnter{Field: &typ.Fields[i]}) // skip changed field
 			}
 		case "monitorClass":
-			if typ.Fields[i].Equals(&def.Field{Name: "monitorClass", Type: typeMap.T_CLASS, ConstantPool: true, Array: false}) {
+			if typ.Fields[i].Equals(&Field{Name: "monitorClass", Type: typeMap.T_CLASS, ConstantPool: true, Array: false}) {
 				res.Fields = append(res.Fields, BindFieldJavaMonitorEnter{Field: &typ.Fields[i], ClassRef: &res.Temp.MonitorClass})
 			} else {
 				res.Fields = append(res.Fields, BindFieldJavaMonitorEnter{Field: &typ.Fields[i]}) // skip changed field
 			}
 		case "previousOwner":
-			if typ.Fields[i].Equals(&def.Field{Name: "previousOwner", Type: typeMap.T_THREAD, ConstantPool: true, Array: false}) {
+			if typ.Fields[i].Equals(&Field{Name: "previousOwner", Type: typeMap.T_THREAD, ConstantPool: true, Array: false}) {
 				res.Fields = append(res.Fields, BindFieldJavaMonitorEnter{Field: &typ.Fields[i], ThreadRef: &res.Temp.PreviousOwner})
 			} else {
 				res.Fields = append(res.Fields, BindFieldJavaMonitorEnter{Field: &typ.Fields[i]}) // skip changed field
 			}
 		case "address":
-			if typ.Fields[i].Equals(&def.Field{Name: "address", Type: typeMap.T_LONG, ConstantPool: false, Array: false}) {
+			if typ.Fields[i].Equals(&Field{Name: "address", Type: typeMap.T_LONG, ConstantPool: false, Array: false}) {
 				res.Fields = append(res.Fields, BindFieldJavaMonitorEnter{Field: &typ.Fields[i], uint64: &res.Temp.Address})
 			} else {
 				res.Fields = append(res.Fields, BindFieldJavaMonitorEnter{Field: &typ.Fields[i]}) // skip changed field
 			}
 		case "contextId":
-			if typ.Fields[i].Equals(&def.Field{Name: "contextId", Type: typeMap.T_LONG, ConstantPool: false, Array: false}) {
+			if typ.Fields[i].Equals(&Field{Name: "contextId", Type: typeMap.T_LONG, ConstantPool: false, Array: false}) {
 				res.Fields = append(res.Fields, BindFieldJavaMonitorEnter{Field: &typ.Fields[i], uint64: &res.Temp.ContextId})
 			} else {
 				res.Fields = append(res.Fields, BindFieldJavaMonitorEnter{Field: &typ.Fields[i]}) // skip changed field
 			}
 		case "spanId":
-			if typ.Fields[i].Equals(&def.Field{Name: "spanId", Type: typeMap.T_LONG, ConstantPool: false, Array: false}) {
+			if typ.Fields[i].Equals(&Field{Name: "spanId", Type: typeMap.T_LONG, ConstantPool: false, Array: false}) {
 				res.Fields = append(res.Fields, BindFieldJavaMonitorEnter{Field: &typ.Fields[i], uint64: &res.Temp.SpanId})
 			} else {
 				res.Fields = append(res.Fields, BindFieldJavaMonitorEnter{Field: &typ.Fields[i]}) // skip changed field
 			}
 		case "spanName":
-			if typ.Fields[i].Equals(&def.Field{Name: "spanName", Type: typeMap.T_LONG, ConstantPool: false, Array: false}) {
+			if typ.Fields[i].Equals(&Field{Name: "spanName", Type: typeMap.T_LONG, ConstantPool: false, Array: false}) {
 				res.Fields = append(res.Fields, BindFieldJavaMonitorEnter{Field: &typ.Fields[i], uint64: &res.Temp.SpanName})
 			} else {
 				res.Fields = append(res.Fields, BindFieldJavaMonitorEnter{Field: &typ.Fields[i]}) // skip changed field
@@ -107,7 +106,7 @@ type JavaMonitorEnter struct {
 	SpanName      uint64
 }
 
-func (this *JavaMonitorEnter) Parse(data []byte, bind *BindJavaMonitorEnter, typeMap *def.TypeMap) (pos int, err error) {
+func (this *JavaMonitorEnter) Parse(data []byte, bind *BindJavaMonitorEnter, typeMap *TypeMap) (pos int, err error) {
 	var (
 		v64_  uint64
 		v32_  uint32
@@ -127,7 +126,7 @@ func (this *JavaMonitorEnter) Parse(data []byte, bind *BindJavaMonitorEnter, typ
 			v32_ = uint32(0)
 			for shift = uint(0); ; shift += 7 {
 				if shift >= 32 {
-					return 0, def.ErrIntOverflow
+					return 0, ErrIntOverflow
 				}
 				if pos >= l {
 					return 0, io.ErrUnexpectedEOF
@@ -193,7 +192,7 @@ func (this *JavaMonitorEnter) Parse(data []byte, bind *BindJavaMonitorEnter, typ
 						v32_ = uint32(0)
 						for shift = uint(0); ; shift += 7 {
 							if shift >= 32 {
-								return 0, def.ErrIntOverflow
+								return 0, ErrIntOverflow
 							}
 							if pos >= l {
 								return 0, io.ErrUnexpectedEOF
@@ -215,7 +214,7 @@ func (this *JavaMonitorEnter) Parse(data []byte, bind *BindJavaMonitorEnter, typ
 						v32_ = uint32(0)
 						for shift = uint(0); ; shift += 7 {
 							if shift >= 32 {
-								return 0, def.ErrIntOverflow
+								return 0, ErrIntOverflow
 							}
 							if pos >= l {
 								return 0, io.ErrUnexpectedEOF
@@ -238,7 +237,7 @@ func (this *JavaMonitorEnter) Parse(data []byte, bind *BindJavaMonitorEnter, typ
 						v32_ = uint32(0)
 						for shift = uint(0); ; shift += 7 {
 							if shift >= 32 {
-								return 0, def.ErrIntOverflow
+								return 0, ErrIntOverflow
 							}
 							if pos >= l {
 								return 0, io.ErrUnexpectedEOF
@@ -256,7 +255,7 @@ func (this *JavaMonitorEnter) Parse(data []byte, bind *BindJavaMonitorEnter, typ
 							v32_ = uint32(0)
 							for shift = uint(0); ; shift += 7 {
 								if shift >= 32 {
-									return 0, def.ErrIntOverflow
+									return 0, ErrIntOverflow
 								}
 								if pos >= l {
 									return 0, io.ErrUnexpectedEOF
@@ -279,7 +278,7 @@ func (this *JavaMonitorEnter) Parse(data []byte, bind *BindJavaMonitorEnter, typ
 					v32_ = uint32(0)
 					for shift = uint(0); ; shift += 7 {
 						if shift >= 32 {
-							return 0, def.ErrIntOverflow
+							return 0, ErrIntOverflow
 						}
 						if pos >= l {
 							return 0, io.ErrUnexpectedEOF
@@ -317,7 +316,7 @@ func (this *JavaMonitorEnter) Parse(data []byte, bind *BindJavaMonitorEnter, typ
 					v16_ = uint16(0)
 					for shift = uint(0); ; shift += 7 {
 						if shift >= 16 {
-							return 0, def.ErrIntOverflow
+							return 0, ErrIntOverflow
 						}
 						if pos >= l {
 							return 0, io.ErrUnexpectedEOF
@@ -341,7 +340,7 @@ func (this *JavaMonitorEnter) Parse(data []byte, bind *BindJavaMonitorEnter, typ
 					v32_ = uint32(0)
 					for shift = uint(0); ; shift += 7 {
 						if shift >= 32 {
-							return 0, def.ErrIntOverflow
+							return 0, ErrIntOverflow
 						}
 						if pos >= l {
 							return 0, io.ErrUnexpectedEOF
@@ -364,7 +363,7 @@ func (this *JavaMonitorEnter) Parse(data []byte, bind *BindJavaMonitorEnter, typ
 						v32_ = uint32(0)
 						for shift = uint(0); ; shift += 7 {
 							if shift >= 32 {
-								return 0, def.ErrIntOverflow
+								return 0, ErrIntOverflow
 							}
 							if pos >= l {
 								return 0, io.ErrUnexpectedEOF
@@ -385,7 +384,7 @@ func (this *JavaMonitorEnter) Parse(data []byte, bind *BindJavaMonitorEnter, typ
 								v32_ = uint32(0)
 								for shift = uint(0); ; shift += 7 {
 									if shift >= 32 {
-										return 0, def.ErrIntOverflow
+										return 0, ErrIntOverflow
 									}
 									if pos >= l {
 										return 0, io.ErrUnexpectedEOF
@@ -413,7 +412,7 @@ func (this *JavaMonitorEnter) Parse(data []byte, bind *BindJavaMonitorEnter, typ
 									v32_ = uint32(0)
 									for shift = uint(0); ; shift += 7 {
 										if shift >= 32 {
-											return 0, def.ErrIntOverflow
+											return 0, ErrIntOverflow
 										}
 										if pos >= l {
 											return 0, io.ErrUnexpectedEOF
@@ -435,7 +434,7 @@ func (this *JavaMonitorEnter) Parse(data []byte, bind *BindJavaMonitorEnter, typ
 									v32_ = uint32(0)
 									for shift = uint(0); ; shift += 7 {
 										if shift >= 32 {
-											return 0, def.ErrIntOverflow
+											return 0, ErrIntOverflow
 										}
 										if pos >= l {
 											return 0, io.ErrUnexpectedEOF
@@ -458,7 +457,7 @@ func (this *JavaMonitorEnter) Parse(data []byte, bind *BindJavaMonitorEnter, typ
 									v32_ = uint32(0)
 									for shift = uint(0); ; shift += 7 {
 										if shift >= 32 {
-											return 0, def.ErrIntOverflow
+											return 0, ErrIntOverflow
 										}
 										if pos >= l {
 											return 0, io.ErrUnexpectedEOF
@@ -476,7 +475,7 @@ func (this *JavaMonitorEnter) Parse(data []byte, bind *BindJavaMonitorEnter, typ
 										v32_ = uint32(0)
 										for shift = uint(0); ; shift += 7 {
 											if shift >= 32 {
-												return 0, def.ErrIntOverflow
+												return 0, ErrIntOverflow
 											}
 											if pos >= l {
 												return 0, io.ErrUnexpectedEOF
@@ -498,7 +497,7 @@ func (this *JavaMonitorEnter) Parse(data []byte, bind *BindJavaMonitorEnter, typ
 								v32_ = uint32(0)
 								for shift = uint(0); ; shift += 7 {
 									if shift >= 32 {
-										return 0, def.ErrIntOverflow
+										return 0, ErrIntOverflow
 									}
 									if pos >= l {
 										return 0, io.ErrUnexpectedEOF
@@ -514,7 +513,7 @@ func (this *JavaMonitorEnter) Parse(data []byte, bind *BindJavaMonitorEnter, typ
 								v32_ = uint32(0)
 								for shift = uint(0); ; shift += 7 {
 									if shift >= 32 {
-										return 0, def.ErrIntOverflow
+										return 0, ErrIntOverflow
 									}
 									if pos >= l {
 										return 0, io.ErrUnexpectedEOF
@@ -548,7 +547,7 @@ func (this *JavaMonitorEnter) Parse(data []byte, bind *BindJavaMonitorEnter, typ
 								v16_ = uint16(0)
 								for shift = uint(0); ; shift += 7 {
 									if shift >= 16 {
-										return 0, def.ErrIntOverflow
+										return 0, ErrIntOverflow
 									}
 									if pos >= l {
 										return 0, io.ErrUnexpectedEOF

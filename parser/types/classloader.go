@@ -4,7 +4,6 @@ package types
 
 import (
 	"fmt"
-	"github.com/grafana/jfr-parser/parser/types/def"
 	"io"
 	"unsafe"
 )
@@ -15,24 +14,24 @@ type BindClassLoader struct {
 }
 
 type BindFieldClassLoader struct {
-	Field     *def.Field
+	Field     *Field
 	ClassRef  *ClassRef
 	SymbolRef *SymbolRef
 }
 
-func NewBindClassLoader(typ *def.Class, typeMap *def.TypeMap) *BindClassLoader {
+func NewBindClassLoader(typ *MetadataClass, typeMap *TypeMap) *BindClassLoader {
 	res := new(BindClassLoader)
 	res.Fields = make([]BindFieldClassLoader, 0, len(typ.Fields))
 	for i := 0; i < len(typ.Fields); i++ {
 		switch typ.Fields[i].Name {
 		case "type":
-			if typ.Fields[i].Equals(&def.Field{Name: "type", Type: typeMap.T_CLASS, ConstantPool: true, Array: false}) {
+			if typ.Fields[i].Equals(&Field{Name: "type", Type: typeMap.T_CLASS, ConstantPool: true, Array: false}) {
 				res.Fields = append(res.Fields, BindFieldClassLoader{Field: &typ.Fields[i], ClassRef: &res.Temp.Type})
 			} else {
 				res.Fields = append(res.Fields, BindFieldClassLoader{Field: &typ.Fields[i]}) // skip changed field
 			}
 		case "name":
-			if typ.Fields[i].Equals(&def.Field{Name: "name", Type: typeMap.T_SYMBOL, ConstantPool: true, Array: false}) {
+			if typ.Fields[i].Equals(&Field{Name: "name", Type: typeMap.T_SYMBOL, ConstantPool: true, Array: false}) {
 				res.Fields = append(res.Fields, BindFieldClassLoader{Field: &typ.Fields[i], SymbolRef: &res.Temp.Name})
 			} else {
 				res.Fields = append(res.Fields, BindFieldClassLoader{Field: &typ.Fields[i]}) // skip changed field
@@ -59,7 +58,7 @@ func (this *ClassLoaderList) Reset() {
 	this.IDMap = make(map[ClassLoaderRef]uint32)
 	this.ClassLoader = nil
 }
-func (this *ClassLoaderList) Parse(data []byte, bind *BindClassLoader, typeMap *def.TypeMap) (pos int, err error) {
+func (this *ClassLoaderList) Parse(data []byte, bind *BindClassLoader, typeMap *TypeMap) (pos int, err error) {
 	var (
 		v64_  uint64
 		v32_  uint32
@@ -76,7 +75,7 @@ func (this *ClassLoaderList) Parse(data []byte, bind *BindClassLoader, typeMap *
 	v32_ = uint32(0)
 	for shift = uint(0); ; shift += 7 {
 		if shift >= 32 {
-			return 0, def.ErrIntOverflow
+			return 0, ErrIntOverflow
 		}
 		if pos >= l {
 			return 0, io.ErrUnexpectedEOF
@@ -117,7 +116,7 @@ func (this *ClassLoaderList) Parse(data []byte, bind *BindClassLoader, typeMap *
 				v32_ = uint32(0)
 				for shift = uint(0); ; shift += 7 {
 					if shift >= 32 {
-						return 0, def.ErrIntOverflow
+						return 0, ErrIntOverflow
 					}
 					if pos >= l {
 						return 0, io.ErrUnexpectedEOF
@@ -179,7 +178,7 @@ func (this *ClassLoaderList) Parse(data []byte, bind *BindClassLoader, typeMap *
 							v32_ = uint32(0)
 							for shift = uint(0); ; shift += 7 {
 								if shift >= 32 {
-									return 0, def.ErrIntOverflow
+									return 0, ErrIntOverflow
 								}
 								if pos >= l {
 									return 0, io.ErrUnexpectedEOF
@@ -201,7 +200,7 @@ func (this *ClassLoaderList) Parse(data []byte, bind *BindClassLoader, typeMap *
 							v32_ = uint32(0)
 							for shift = uint(0); ; shift += 7 {
 								if shift >= 32 {
-									return 0, def.ErrIntOverflow
+									return 0, ErrIntOverflow
 								}
 								if pos >= l {
 									return 0, io.ErrUnexpectedEOF
@@ -224,7 +223,7 @@ func (this *ClassLoaderList) Parse(data []byte, bind *BindClassLoader, typeMap *
 							v32_ = uint32(0)
 							for shift = uint(0); ; shift += 7 {
 								if shift >= 32 {
-									return 0, def.ErrIntOverflow
+									return 0, ErrIntOverflow
 								}
 								if pos >= l {
 									return 0, io.ErrUnexpectedEOF
@@ -242,7 +241,7 @@ func (this *ClassLoaderList) Parse(data []byte, bind *BindClassLoader, typeMap *
 								v32_ = uint32(0)
 								for shift = uint(0); ; shift += 7 {
 									if shift >= 32 {
-										return 0, def.ErrIntOverflow
+										return 0, ErrIntOverflow
 									}
 									if pos >= l {
 										return 0, io.ErrUnexpectedEOF
@@ -265,7 +264,7 @@ func (this *ClassLoaderList) Parse(data []byte, bind *BindClassLoader, typeMap *
 						v32_ = uint32(0)
 						for shift = uint(0); ; shift += 7 {
 							if shift >= 32 {
-								return 0, def.ErrIntOverflow
+								return 0, ErrIntOverflow
 							}
 							if pos >= l {
 								return 0, io.ErrUnexpectedEOF
@@ -301,7 +300,7 @@ func (this *ClassLoaderList) Parse(data []byte, bind *BindClassLoader, typeMap *
 						v16_ = uint16(0)
 						for shift = uint(0); ; shift += 7 {
 							if shift >= 16 {
-								return 0, def.ErrIntOverflow
+								return 0, ErrIntOverflow
 							}
 							if pos >= l {
 								return 0, io.ErrUnexpectedEOF
@@ -325,7 +324,7 @@ func (this *ClassLoaderList) Parse(data []byte, bind *BindClassLoader, typeMap *
 						v32_ = uint32(0)
 						for shift = uint(0); ; shift += 7 {
 							if shift >= 32 {
-								return 0, def.ErrIntOverflow
+								return 0, ErrIntOverflow
 							}
 							if pos >= l {
 								return 0, io.ErrUnexpectedEOF
@@ -348,7 +347,7 @@ func (this *ClassLoaderList) Parse(data []byte, bind *BindClassLoader, typeMap *
 							v32_ = uint32(0)
 							for shift = uint(0); ; shift += 7 {
 								if shift >= 32 {
-									return 0, def.ErrIntOverflow
+									return 0, ErrIntOverflow
 								}
 								if pos >= l {
 									return 0, io.ErrUnexpectedEOF
@@ -369,7 +368,7 @@ func (this *ClassLoaderList) Parse(data []byte, bind *BindClassLoader, typeMap *
 									v32_ = uint32(0)
 									for shift = uint(0); ; shift += 7 {
 										if shift >= 32 {
-											return 0, def.ErrIntOverflow
+											return 0, ErrIntOverflow
 										}
 										if pos >= l {
 											return 0, io.ErrUnexpectedEOF
@@ -397,7 +396,7 @@ func (this *ClassLoaderList) Parse(data []byte, bind *BindClassLoader, typeMap *
 										v32_ = uint32(0)
 										for shift = uint(0); ; shift += 7 {
 											if shift >= 32 {
-												return 0, def.ErrIntOverflow
+												return 0, ErrIntOverflow
 											}
 											if pos >= l {
 												return 0, io.ErrUnexpectedEOF
@@ -419,7 +418,7 @@ func (this *ClassLoaderList) Parse(data []byte, bind *BindClassLoader, typeMap *
 										v32_ = uint32(0)
 										for shift = uint(0); ; shift += 7 {
 											if shift >= 32 {
-												return 0, def.ErrIntOverflow
+												return 0, ErrIntOverflow
 											}
 											if pos >= l {
 												return 0, io.ErrUnexpectedEOF
@@ -442,7 +441,7 @@ func (this *ClassLoaderList) Parse(data []byte, bind *BindClassLoader, typeMap *
 										v32_ = uint32(0)
 										for shift = uint(0); ; shift += 7 {
 											if shift >= 32 {
-												return 0, def.ErrIntOverflow
+												return 0, ErrIntOverflow
 											}
 											if pos >= l {
 												return 0, io.ErrUnexpectedEOF
@@ -460,7 +459,7 @@ func (this *ClassLoaderList) Parse(data []byte, bind *BindClassLoader, typeMap *
 											v32_ = uint32(0)
 											for shift = uint(0); ; shift += 7 {
 												if shift >= 32 {
-													return 0, def.ErrIntOverflow
+													return 0, ErrIntOverflow
 												}
 												if pos >= l {
 													return 0, io.ErrUnexpectedEOF
@@ -482,7 +481,7 @@ func (this *ClassLoaderList) Parse(data []byte, bind *BindClassLoader, typeMap *
 									v32_ = uint32(0)
 									for shift = uint(0); ; shift += 7 {
 										if shift >= 32 {
-											return 0, def.ErrIntOverflow
+											return 0, ErrIntOverflow
 										}
 										if pos >= l {
 											return 0, io.ErrUnexpectedEOF
@@ -498,7 +497,7 @@ func (this *ClassLoaderList) Parse(data []byte, bind *BindClassLoader, typeMap *
 									v32_ = uint32(0)
 									for shift = uint(0); ; shift += 7 {
 										if shift >= 32 {
-											return 0, def.ErrIntOverflow
+											return 0, ErrIntOverflow
 										}
 										if pos >= l {
 											return 0, io.ErrUnexpectedEOF
@@ -532,7 +531,7 @@ func (this *ClassLoaderList) Parse(data []byte, bind *BindClassLoader, typeMap *
 									v16_ = uint16(0)
 									for shift = uint(0); ; shift += 7 {
 										if shift >= 16 {
-											return 0, def.ErrIntOverflow
+											return 0, ErrIntOverflow
 										}
 										if pos >= l {
 											return 0, io.ErrUnexpectedEOF

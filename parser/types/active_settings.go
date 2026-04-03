@@ -4,7 +4,6 @@ package types
 
 import (
 	"fmt"
-	"github.com/grafana/jfr-parser/parser/types/def"
 	"io"
 	"unsafe"
 )
@@ -15,56 +14,56 @@ type BindActiveSetting struct {
 }
 
 type BindFieldActiveSetting struct {
-	Field         *def.Field
+	Field         *Field
 	uint64        *uint64
 	ThreadRef     *ThreadRef
 	StackTraceRef *StackTraceRef
 	string        *string
 }
 
-func NewBindActiveSetting(typ *def.Class, typeMap *def.TypeMap) *BindActiveSetting {
+func NewBindActiveSetting(typ *MetadataClass, typeMap *TypeMap) *BindActiveSetting {
 	res := new(BindActiveSetting)
 	res.Fields = make([]BindFieldActiveSetting, 0, len(typ.Fields))
 	for i := 0; i < len(typ.Fields); i++ {
 		switch typ.Fields[i].Name {
 		case "startTime":
-			if typ.Fields[i].Equals(&def.Field{Name: "startTime", Type: typeMap.T_LONG, ConstantPool: false, Array: false}) {
+			if typ.Fields[i].Equals(&Field{Name: "startTime", Type: typeMap.T_LONG, ConstantPool: false, Array: false}) {
 				res.Fields = append(res.Fields, BindFieldActiveSetting{Field: &typ.Fields[i], uint64: &res.Temp.StartTime})
 			} else {
 				res.Fields = append(res.Fields, BindFieldActiveSetting{Field: &typ.Fields[i]}) // skip changed field
 			}
 		case "duration":
-			if typ.Fields[i].Equals(&def.Field{Name: "duration", Type: typeMap.T_LONG, ConstantPool: false, Array: false}) {
+			if typ.Fields[i].Equals(&Field{Name: "duration", Type: typeMap.T_LONG, ConstantPool: false, Array: false}) {
 				res.Fields = append(res.Fields, BindFieldActiveSetting{Field: &typ.Fields[i], uint64: &res.Temp.Duration})
 			} else {
 				res.Fields = append(res.Fields, BindFieldActiveSetting{Field: &typ.Fields[i]}) // skip changed field
 			}
 		case "eventThread":
-			if typ.Fields[i].Equals(&def.Field{Name: "eventThread", Type: typeMap.T_THREAD, ConstantPool: true, Array: false}) {
+			if typ.Fields[i].Equals(&Field{Name: "eventThread", Type: typeMap.T_THREAD, ConstantPool: true, Array: false}) {
 				res.Fields = append(res.Fields, BindFieldActiveSetting{Field: &typ.Fields[i], ThreadRef: &res.Temp.EventThread})
 			} else {
 				res.Fields = append(res.Fields, BindFieldActiveSetting{Field: &typ.Fields[i]}) // skip changed field
 			}
 		case "stackTrace":
-			if typ.Fields[i].Equals(&def.Field{Name: "stackTrace", Type: typeMap.T_STACK_TRACE, ConstantPool: true, Array: false}) {
+			if typ.Fields[i].Equals(&Field{Name: "stackTrace", Type: typeMap.T_STACK_TRACE, ConstantPool: true, Array: false}) {
 				res.Fields = append(res.Fields, BindFieldActiveSetting{Field: &typ.Fields[i], StackTraceRef: &res.Temp.StackTrace})
 			} else {
 				res.Fields = append(res.Fields, BindFieldActiveSetting{Field: &typ.Fields[i]}) // skip changed field
 			}
 		case "id":
-			if typ.Fields[i].Equals(&def.Field{Name: "id", Type: typeMap.T_LONG, ConstantPool: false, Array: false}) {
+			if typ.Fields[i].Equals(&Field{Name: "id", Type: typeMap.T_LONG, ConstantPool: false, Array: false}) {
 				res.Fields = append(res.Fields, BindFieldActiveSetting{Field: &typ.Fields[i], uint64: &res.Temp.Id})
 			} else {
 				res.Fields = append(res.Fields, BindFieldActiveSetting{Field: &typ.Fields[i]}) // skip changed field
 			}
 		case "name":
-			if typ.Fields[i].Equals(&def.Field{Name: "name", Type: typeMap.T_STRING, ConstantPool: false, Array: false}) {
+			if typ.Fields[i].Equals(&Field{Name: "name", Type: typeMap.T_STRING, ConstantPool: false, Array: false}) {
 				res.Fields = append(res.Fields, BindFieldActiveSetting{Field: &typ.Fields[i], string: &res.Temp.Name})
 			} else {
 				res.Fields = append(res.Fields, BindFieldActiveSetting{Field: &typ.Fields[i]}) // skip changed field
 			}
 		case "value":
-			if typ.Fields[i].Equals(&def.Field{Name: "value", Type: typeMap.T_STRING, ConstantPool: false, Array: false}) {
+			if typ.Fields[i].Equals(&Field{Name: "value", Type: typeMap.T_STRING, ConstantPool: false, Array: false}) {
 				res.Fields = append(res.Fields, BindFieldActiveSetting{Field: &typ.Fields[i], string: &res.Temp.Value})
 			} else {
 				res.Fields = append(res.Fields, BindFieldActiveSetting{Field: &typ.Fields[i]}) // skip changed field
@@ -86,7 +85,7 @@ type ActiveSetting struct {
 	Value       string
 }
 
-func (this *ActiveSetting) Parse(data []byte, bind *BindActiveSetting, typeMap *def.TypeMap) (pos int, err error) {
+func (this *ActiveSetting) Parse(data []byte, bind *BindActiveSetting, typeMap *TypeMap) (pos int, err error) {
 	var (
 		v64_  uint64
 		v32_  uint32
@@ -106,7 +105,7 @@ func (this *ActiveSetting) Parse(data []byte, bind *BindActiveSetting, typeMap *
 			v32_ = uint32(0)
 			for shift = uint(0); ; shift += 7 {
 				if shift >= 32 {
-					return 0, def.ErrIntOverflow
+					return 0, ErrIntOverflow
 				}
 				if pos >= l {
 					return 0, io.ErrUnexpectedEOF
@@ -168,7 +167,7 @@ func (this *ActiveSetting) Parse(data []byte, bind *BindActiveSetting, typeMap *
 						v32_ = uint32(0)
 						for shift = uint(0); ; shift += 7 {
 							if shift >= 32 {
-								return 0, def.ErrIntOverflow
+								return 0, ErrIntOverflow
 							}
 							if pos >= l {
 								return 0, io.ErrUnexpectedEOF
@@ -190,7 +189,7 @@ func (this *ActiveSetting) Parse(data []byte, bind *BindActiveSetting, typeMap *
 						v32_ = uint32(0)
 						for shift = uint(0); ; shift += 7 {
 							if shift >= 32 {
-								return 0, def.ErrIntOverflow
+								return 0, ErrIntOverflow
 							}
 							if pos >= l {
 								return 0, io.ErrUnexpectedEOF
@@ -213,7 +212,7 @@ func (this *ActiveSetting) Parse(data []byte, bind *BindActiveSetting, typeMap *
 						v32_ = uint32(0)
 						for shift = uint(0); ; shift += 7 {
 							if shift >= 32 {
-								return 0, def.ErrIntOverflow
+								return 0, ErrIntOverflow
 							}
 							if pos >= l {
 								return 0, io.ErrUnexpectedEOF
@@ -231,7 +230,7 @@ func (this *ActiveSetting) Parse(data []byte, bind *BindActiveSetting, typeMap *
 							v32_ = uint32(0)
 							for shift = uint(0); ; shift += 7 {
 								if shift >= 32 {
-									return 0, def.ErrIntOverflow
+									return 0, ErrIntOverflow
 								}
 								if pos >= l {
 									return 0, io.ErrUnexpectedEOF
@@ -256,7 +255,7 @@ func (this *ActiveSetting) Parse(data []byte, bind *BindActiveSetting, typeMap *
 					v32_ = uint32(0)
 					for shift = uint(0); ; shift += 7 {
 						if shift >= 32 {
-							return 0, def.ErrIntOverflow
+							return 0, ErrIntOverflow
 						}
 						if pos >= l {
 							return 0, io.ErrUnexpectedEOF
@@ -294,7 +293,7 @@ func (this *ActiveSetting) Parse(data []byte, bind *BindActiveSetting, typeMap *
 					v16_ = uint16(0)
 					for shift = uint(0); ; shift += 7 {
 						if shift >= 16 {
-							return 0, def.ErrIntOverflow
+							return 0, ErrIntOverflow
 						}
 						if pos >= l {
 							return 0, io.ErrUnexpectedEOF
@@ -318,7 +317,7 @@ func (this *ActiveSetting) Parse(data []byte, bind *BindActiveSetting, typeMap *
 					v32_ = uint32(0)
 					for shift = uint(0); ; shift += 7 {
 						if shift >= 32 {
-							return 0, def.ErrIntOverflow
+							return 0, ErrIntOverflow
 						}
 						if pos >= l {
 							return 0, io.ErrUnexpectedEOF
@@ -341,7 +340,7 @@ func (this *ActiveSetting) Parse(data []byte, bind *BindActiveSetting, typeMap *
 						v32_ = uint32(0)
 						for shift = uint(0); ; shift += 7 {
 							if shift >= 32 {
-								return 0, def.ErrIntOverflow
+								return 0, ErrIntOverflow
 							}
 							if pos >= l {
 								return 0, io.ErrUnexpectedEOF
@@ -362,7 +361,7 @@ func (this *ActiveSetting) Parse(data []byte, bind *BindActiveSetting, typeMap *
 								v32_ = uint32(0)
 								for shift = uint(0); ; shift += 7 {
 									if shift >= 32 {
-										return 0, def.ErrIntOverflow
+										return 0, ErrIntOverflow
 									}
 									if pos >= l {
 										return 0, io.ErrUnexpectedEOF
@@ -390,7 +389,7 @@ func (this *ActiveSetting) Parse(data []byte, bind *BindActiveSetting, typeMap *
 									v32_ = uint32(0)
 									for shift = uint(0); ; shift += 7 {
 										if shift >= 32 {
-											return 0, def.ErrIntOverflow
+											return 0, ErrIntOverflow
 										}
 										if pos >= l {
 											return 0, io.ErrUnexpectedEOF
@@ -412,7 +411,7 @@ func (this *ActiveSetting) Parse(data []byte, bind *BindActiveSetting, typeMap *
 									v32_ = uint32(0)
 									for shift = uint(0); ; shift += 7 {
 										if shift >= 32 {
-											return 0, def.ErrIntOverflow
+											return 0, ErrIntOverflow
 										}
 										if pos >= l {
 											return 0, io.ErrUnexpectedEOF
@@ -435,7 +434,7 @@ func (this *ActiveSetting) Parse(data []byte, bind *BindActiveSetting, typeMap *
 									v32_ = uint32(0)
 									for shift = uint(0); ; shift += 7 {
 										if shift >= 32 {
-											return 0, def.ErrIntOverflow
+											return 0, ErrIntOverflow
 										}
 										if pos >= l {
 											return 0, io.ErrUnexpectedEOF
@@ -453,7 +452,7 @@ func (this *ActiveSetting) Parse(data []byte, bind *BindActiveSetting, typeMap *
 										v32_ = uint32(0)
 										for shift = uint(0); ; shift += 7 {
 											if shift >= 32 {
-												return 0, def.ErrIntOverflow
+												return 0, ErrIntOverflow
 											}
 											if pos >= l {
 												return 0, io.ErrUnexpectedEOF
@@ -475,7 +474,7 @@ func (this *ActiveSetting) Parse(data []byte, bind *BindActiveSetting, typeMap *
 								v32_ = uint32(0)
 								for shift = uint(0); ; shift += 7 {
 									if shift >= 32 {
-										return 0, def.ErrIntOverflow
+										return 0, ErrIntOverflow
 									}
 									if pos >= l {
 										return 0, io.ErrUnexpectedEOF
@@ -491,7 +490,7 @@ func (this *ActiveSetting) Parse(data []byte, bind *BindActiveSetting, typeMap *
 								v32_ = uint32(0)
 								for shift = uint(0); ; shift += 7 {
 									if shift >= 32 {
-										return 0, def.ErrIntOverflow
+										return 0, ErrIntOverflow
 									}
 									if pos >= l {
 										return 0, io.ErrUnexpectedEOF
@@ -525,7 +524,7 @@ func (this *ActiveSetting) Parse(data []byte, bind *BindActiveSetting, typeMap *
 								v16_ = uint16(0)
 								for shift = uint(0); ; shift += 7 {
 									if shift >= 16 {
-										return 0, def.ErrIntOverflow
+										return 0, ErrIntOverflow
 									}
 									if pos >= l {
 										return 0, io.ErrUnexpectedEOF

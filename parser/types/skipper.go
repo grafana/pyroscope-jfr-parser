@@ -4,7 +4,6 @@ package types
 
 import (
 	"fmt"
-	"github.com/grafana/jfr-parser/parser/types/def"
 	"io"
 	"unsafe"
 )
@@ -15,10 +14,10 @@ type BindSkipConstantPool struct {
 }
 
 type BindFieldSkipConstantPool struct {
-	Field *def.Field
+	Field *Field
 }
 
-func NewBindSkipConstantPool(typ *def.Class, typeMap *def.TypeMap) *BindSkipConstantPool {
+func NewBindSkipConstantPool(typ *MetadataClass, typeMap *TypeMap) *BindSkipConstantPool {
 	res := new(BindSkipConstantPool)
 	res.Fields = make([]BindFieldSkipConstantPool, 0, len(typ.Fields))
 	for i := 0; i < len(typ.Fields); i++ {
@@ -37,7 +36,7 @@ type SkipConstantPoolList struct {
 type SkipConstantPool struct {
 }
 
-func (this *SkipConstantPoolList) Parse(data []byte, bind *BindSkipConstantPool, typeMap *def.TypeMap) (pos int, err error) {
+func (this *SkipConstantPoolList) Parse(data []byte, bind *BindSkipConstantPool, typeMap *TypeMap) (pos int, err error) {
 	var (
 		v64_  uint64
 		v32_  uint32
@@ -54,7 +53,7 @@ func (this *SkipConstantPoolList) Parse(data []byte, bind *BindSkipConstantPool,
 	v32_ = uint32(0)
 	for shift = uint(0); ; shift += 7 {
 		if shift >= 32 {
-			return 0, def.ErrIntOverflow
+			return 0, ErrIntOverflow
 		}
 		if pos >= l {
 			return 0, io.ErrUnexpectedEOF
@@ -91,7 +90,7 @@ func (this *SkipConstantPoolList) Parse(data []byte, bind *BindSkipConstantPool,
 				v32_ = uint32(0)
 				for shift = uint(0); ; shift += 7 {
 					if shift >= 32 {
-						return 0, def.ErrIntOverflow
+						return 0, ErrIntOverflow
 					}
 					if pos >= l {
 						return 0, io.ErrUnexpectedEOF
@@ -143,7 +142,7 @@ func (this *SkipConstantPoolList) Parse(data []byte, bind *BindSkipConstantPool,
 							v32_ = uint32(0)
 							for shift = uint(0); ; shift += 7 {
 								if shift >= 32 {
-									return 0, def.ErrIntOverflow
+									return 0, ErrIntOverflow
 								}
 								if pos >= l {
 									return 0, io.ErrUnexpectedEOF
@@ -165,7 +164,7 @@ func (this *SkipConstantPoolList) Parse(data []byte, bind *BindSkipConstantPool,
 							v32_ = uint32(0)
 							for shift = uint(0); ; shift += 7 {
 								if shift >= 32 {
-									return 0, def.ErrIntOverflow
+									return 0, ErrIntOverflow
 								}
 								if pos >= l {
 									return 0, io.ErrUnexpectedEOF
@@ -188,7 +187,7 @@ func (this *SkipConstantPoolList) Parse(data []byte, bind *BindSkipConstantPool,
 							v32_ = uint32(0)
 							for shift = uint(0); ; shift += 7 {
 								if shift >= 32 {
-									return 0, def.ErrIntOverflow
+									return 0, ErrIntOverflow
 								}
 								if pos >= l {
 									return 0, io.ErrUnexpectedEOF
@@ -206,7 +205,7 @@ func (this *SkipConstantPoolList) Parse(data []byte, bind *BindSkipConstantPool,
 								v32_ = uint32(0)
 								for shift = uint(0); ; shift += 7 {
 									if shift >= 32 {
-										return 0, def.ErrIntOverflow
+										return 0, ErrIntOverflow
 									}
 									if pos >= l {
 										return 0, io.ErrUnexpectedEOF
@@ -229,7 +228,7 @@ func (this *SkipConstantPoolList) Parse(data []byte, bind *BindSkipConstantPool,
 						v32_ = uint32(0)
 						for shift = uint(0); ; shift += 7 {
 							if shift >= 32 {
-								return 0, def.ErrIntOverflow
+								return 0, ErrIntOverflow
 							}
 							if pos >= l {
 								return 0, io.ErrUnexpectedEOF
@@ -265,7 +264,7 @@ func (this *SkipConstantPoolList) Parse(data []byte, bind *BindSkipConstantPool,
 						v16_ = uint16(0)
 						for shift = uint(0); ; shift += 7 {
 							if shift >= 16 {
-								return 0, def.ErrIntOverflow
+								return 0, ErrIntOverflow
 							}
 							if pos >= l {
 								return 0, io.ErrUnexpectedEOF
@@ -289,7 +288,7 @@ func (this *SkipConstantPoolList) Parse(data []byte, bind *BindSkipConstantPool,
 						v32_ = uint32(0)
 						for shift = uint(0); ; shift += 7 {
 							if shift >= 32 {
-								return 0, def.ErrIntOverflow
+								return 0, ErrIntOverflow
 							}
 							if pos >= l {
 								return 0, io.ErrUnexpectedEOF
@@ -312,7 +311,7 @@ func (this *SkipConstantPoolList) Parse(data []byte, bind *BindSkipConstantPool,
 							v32_ = uint32(0)
 							for shift = uint(0); ; shift += 7 {
 								if shift >= 32 {
-									return 0, def.ErrIntOverflow
+									return 0, ErrIntOverflow
 								}
 								if pos >= l {
 									return 0, io.ErrUnexpectedEOF
@@ -333,7 +332,7 @@ func (this *SkipConstantPoolList) Parse(data []byte, bind *BindSkipConstantPool,
 									v32_ = uint32(0)
 									for shift = uint(0); ; shift += 7 {
 										if shift >= 32 {
-											return 0, def.ErrIntOverflow
+											return 0, ErrIntOverflow
 										}
 										if pos >= l {
 											return 0, io.ErrUnexpectedEOF
@@ -361,7 +360,7 @@ func (this *SkipConstantPoolList) Parse(data []byte, bind *BindSkipConstantPool,
 										v32_ = uint32(0)
 										for shift = uint(0); ; shift += 7 {
 											if shift >= 32 {
-												return 0, def.ErrIntOverflow
+												return 0, ErrIntOverflow
 											}
 											if pos >= l {
 												return 0, io.ErrUnexpectedEOF
@@ -383,7 +382,7 @@ func (this *SkipConstantPoolList) Parse(data []byte, bind *BindSkipConstantPool,
 										v32_ = uint32(0)
 										for shift = uint(0); ; shift += 7 {
 											if shift >= 32 {
-												return 0, def.ErrIntOverflow
+												return 0, ErrIntOverflow
 											}
 											if pos >= l {
 												return 0, io.ErrUnexpectedEOF
@@ -406,7 +405,7 @@ func (this *SkipConstantPoolList) Parse(data []byte, bind *BindSkipConstantPool,
 										v32_ = uint32(0)
 										for shift = uint(0); ; shift += 7 {
 											if shift >= 32 {
-												return 0, def.ErrIntOverflow
+												return 0, ErrIntOverflow
 											}
 											if pos >= l {
 												return 0, io.ErrUnexpectedEOF
@@ -424,7 +423,7 @@ func (this *SkipConstantPoolList) Parse(data []byte, bind *BindSkipConstantPool,
 											v32_ = uint32(0)
 											for shift = uint(0); ; shift += 7 {
 												if shift >= 32 {
-													return 0, def.ErrIntOverflow
+													return 0, ErrIntOverflow
 												}
 												if pos >= l {
 													return 0, io.ErrUnexpectedEOF
@@ -446,7 +445,7 @@ func (this *SkipConstantPoolList) Parse(data []byte, bind *BindSkipConstantPool,
 									v32_ = uint32(0)
 									for shift = uint(0); ; shift += 7 {
 										if shift >= 32 {
-											return 0, def.ErrIntOverflow
+											return 0, ErrIntOverflow
 										}
 										if pos >= l {
 											return 0, io.ErrUnexpectedEOF
@@ -462,7 +461,7 @@ func (this *SkipConstantPoolList) Parse(data []byte, bind *BindSkipConstantPool,
 									v32_ = uint32(0)
 									for shift = uint(0); ; shift += 7 {
 										if shift >= 32 {
-											return 0, def.ErrIntOverflow
+											return 0, ErrIntOverflow
 										}
 										if pos >= l {
 											return 0, io.ErrUnexpectedEOF
@@ -496,7 +495,7 @@ func (this *SkipConstantPoolList) Parse(data []byte, bind *BindSkipConstantPool,
 									v16_ = uint16(0)
 									for shift = uint(0); ; shift += 7 {
 										if shift >= 16 {
-											return 0, def.ErrIntOverflow
+											return 0, ErrIntOverflow
 										}
 										if pos >= l {
 											return 0, io.ErrUnexpectedEOF

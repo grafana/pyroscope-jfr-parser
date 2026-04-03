@@ -3,13 +3,13 @@ package parser
 import (
 	"fmt"
 
-	"github.com/grafana/jfr-parser/parser/types/def"
+	types2 "github.com/grafana/jfr-parser/parser/types"
 	"golang.org/x/text/encoding/charmap"
 )
 
 func (p *Parser) readMeta(pos int) error {
-	p.TypeMap.IDMap = make(map[def.TypeID]*def.Class, 43+5)
-	p.TypeMap.NameMap = make(map[string]*def.Class, 43+5)
+	p.TypeMap.IDMap = make(map[types2.TypeID]*types2.MetadataClass, 43+5)
+	p.TypeMap.NameMap = make(map[string]*types2.MetadataClass, 43+5)
 	p.TypeMap.ISO8859_1Decoder = charmap.ISO8859_1.NewDecoder()
 
 	if err := p.seek(pos); err != nil {
@@ -69,11 +69,11 @@ func (p *Parser) readMeta(pos int) error {
 				if err != nil {
 					return err
 				}
-				cls, err := def.NewClass(classElement.attr, classElement.childCount)
+				cls, err := types2.NewMetadataClass(classElement.attr, classElement.childCount)
 				if err != nil {
 					return err
 				}
-				if cls.ID == def.UnsetTypeID {
+				if cls.ID == types2.UnsetTypeID {
 					return fmt.Errorf("invalid type ID for class %s", cls.Name)
 				}
 
@@ -83,7 +83,7 @@ func (p *Parser) readMeta(pos int) error {
 						return err
 					}
 					if field.name == "field" {
-						f, err := def.NewField(field.attr)
+						f, err := types2.NewField(field.attr)
 						if err != nil {
 							return err
 						}
@@ -119,7 +119,7 @@ func (p *Parser) readElement(strings []string, needAttributes bool) (element, er
 		return element{}, err
 	}
 	if iname < 0 || int(iname) >= len(strings) {
-		return element{}, def.ErrIntOverflow
+		return element{}, types2.ErrIntOverflow
 	}
 	name := strings[iname]
 	attributeCount, err := p.varInt()
@@ -136,14 +136,14 @@ func (p *Parser) readElement(strings []string, needAttributes bool) (element, er
 			return element{}, err
 		}
 		if attributeName < 0 || int(attributeName) >= len(strings) {
-			return element{}, def.ErrIntOverflow
+			return element{}, types2.ErrIntOverflow
 		}
 		attributeValue, err := p.varInt()
 		if err != nil {
 			return element{}, err
 		}
 		if attributeValue < 0 || int(attributeValue) >= len(strings) {
-			return element{}, def.ErrIntOverflow
+			return element{}, types2.ErrIntOverflow
 		}
 		if needAttributes {
 			attributes[strings[attributeName]] = strings[attributeValue]

@@ -4,7 +4,6 @@ package types
 
 import (
 	"fmt"
-	"github.com/grafana/jfr-parser/parser/types/def"
 	"io"
 	"unsafe"
 )
@@ -15,17 +14,17 @@ type BindThreadState struct {
 }
 
 type BindFieldThreadState struct {
-	Field  *def.Field
+	Field  *Field
 	string *string
 }
 
-func NewBindThreadState(typ *def.Class, typeMap *def.TypeMap) *BindThreadState {
+func NewBindThreadState(typ *MetadataClass, typeMap *TypeMap) *BindThreadState {
 	res := new(BindThreadState)
 	res.Fields = make([]BindFieldThreadState, 0, len(typ.Fields))
 	for i := 0; i < len(typ.Fields); i++ {
 		switch typ.Fields[i].Name {
 		case "name":
-			if typ.Fields[i].Equals(&def.Field{Name: "name", Type: typeMap.T_STRING, ConstantPool: false, Array: false}) {
+			if typ.Fields[i].Equals(&Field{Name: "name", Type: typeMap.T_STRING, ConstantPool: false, Array: false}) {
 				res.Fields = append(res.Fields, BindFieldThreadState{Field: &typ.Fields[i], string: &res.Temp.Name})
 			} else {
 				res.Fields = append(res.Fields, BindFieldThreadState{Field: &typ.Fields[i]}) // skip changed field
@@ -51,7 +50,7 @@ func (this *ThreadStateList) Reset() {
 	this.IDMap = make(map[ThreadStateRef]uint32)
 	this.ThreadState = nil
 }
-func (this *ThreadStateList) Parse(data []byte, bind *BindThreadState, typeMap *def.TypeMap) (pos int, err error) {
+func (this *ThreadStateList) Parse(data []byte, bind *BindThreadState, typeMap *TypeMap) (pos int, err error) {
 	var (
 		v64_  uint64
 		v32_  uint32
@@ -68,7 +67,7 @@ func (this *ThreadStateList) Parse(data []byte, bind *BindThreadState, typeMap *
 	v32_ = uint32(0)
 	for shift = uint(0); ; shift += 7 {
 		if shift >= 32 {
-			return 0, def.ErrIntOverflow
+			return 0, ErrIntOverflow
 		}
 		if pos >= l {
 			return 0, io.ErrUnexpectedEOF
@@ -109,7 +108,7 @@ func (this *ThreadStateList) Parse(data []byte, bind *BindThreadState, typeMap *
 				v32_ = uint32(0)
 				for shift = uint(0); ; shift += 7 {
 					if shift >= 32 {
-						return 0, def.ErrIntOverflow
+						return 0, ErrIntOverflow
 					}
 					if pos >= l {
 						return 0, io.ErrUnexpectedEOF
@@ -161,7 +160,7 @@ func (this *ThreadStateList) Parse(data []byte, bind *BindThreadState, typeMap *
 							v32_ = uint32(0)
 							for shift = uint(0); ; shift += 7 {
 								if shift >= 32 {
-									return 0, def.ErrIntOverflow
+									return 0, ErrIntOverflow
 								}
 								if pos >= l {
 									return 0, io.ErrUnexpectedEOF
@@ -183,7 +182,7 @@ func (this *ThreadStateList) Parse(data []byte, bind *BindThreadState, typeMap *
 							v32_ = uint32(0)
 							for shift = uint(0); ; shift += 7 {
 								if shift >= 32 {
-									return 0, def.ErrIntOverflow
+									return 0, ErrIntOverflow
 								}
 								if pos >= l {
 									return 0, io.ErrUnexpectedEOF
@@ -206,7 +205,7 @@ func (this *ThreadStateList) Parse(data []byte, bind *BindThreadState, typeMap *
 							v32_ = uint32(0)
 							for shift = uint(0); ; shift += 7 {
 								if shift >= 32 {
-									return 0, def.ErrIntOverflow
+									return 0, ErrIntOverflow
 								}
 								if pos >= l {
 									return 0, io.ErrUnexpectedEOF
@@ -224,7 +223,7 @@ func (this *ThreadStateList) Parse(data []byte, bind *BindThreadState, typeMap *
 								v32_ = uint32(0)
 								for shift = uint(0); ; shift += 7 {
 									if shift >= 32 {
-										return 0, def.ErrIntOverflow
+										return 0, ErrIntOverflow
 									}
 									if pos >= l {
 										return 0, io.ErrUnexpectedEOF
@@ -249,7 +248,7 @@ func (this *ThreadStateList) Parse(data []byte, bind *BindThreadState, typeMap *
 						v32_ = uint32(0)
 						for shift = uint(0); ; shift += 7 {
 							if shift >= 32 {
-								return 0, def.ErrIntOverflow
+								return 0, ErrIntOverflow
 							}
 							if pos >= l {
 								return 0, io.ErrUnexpectedEOF
@@ -285,7 +284,7 @@ func (this *ThreadStateList) Parse(data []byte, bind *BindThreadState, typeMap *
 						v16_ = uint16(0)
 						for shift = uint(0); ; shift += 7 {
 							if shift >= 16 {
-								return 0, def.ErrIntOverflow
+								return 0, ErrIntOverflow
 							}
 							if pos >= l {
 								return 0, io.ErrUnexpectedEOF
@@ -309,7 +308,7 @@ func (this *ThreadStateList) Parse(data []byte, bind *BindThreadState, typeMap *
 						v32_ = uint32(0)
 						for shift = uint(0); ; shift += 7 {
 							if shift >= 32 {
-								return 0, def.ErrIntOverflow
+								return 0, ErrIntOverflow
 							}
 							if pos >= l {
 								return 0, io.ErrUnexpectedEOF
@@ -332,7 +331,7 @@ func (this *ThreadStateList) Parse(data []byte, bind *BindThreadState, typeMap *
 							v32_ = uint32(0)
 							for shift = uint(0); ; shift += 7 {
 								if shift >= 32 {
-									return 0, def.ErrIntOverflow
+									return 0, ErrIntOverflow
 								}
 								if pos >= l {
 									return 0, io.ErrUnexpectedEOF
@@ -353,7 +352,7 @@ func (this *ThreadStateList) Parse(data []byte, bind *BindThreadState, typeMap *
 									v32_ = uint32(0)
 									for shift = uint(0); ; shift += 7 {
 										if shift >= 32 {
-											return 0, def.ErrIntOverflow
+											return 0, ErrIntOverflow
 										}
 										if pos >= l {
 											return 0, io.ErrUnexpectedEOF
@@ -381,7 +380,7 @@ func (this *ThreadStateList) Parse(data []byte, bind *BindThreadState, typeMap *
 										v32_ = uint32(0)
 										for shift = uint(0); ; shift += 7 {
 											if shift >= 32 {
-												return 0, def.ErrIntOverflow
+												return 0, ErrIntOverflow
 											}
 											if pos >= l {
 												return 0, io.ErrUnexpectedEOF
@@ -403,7 +402,7 @@ func (this *ThreadStateList) Parse(data []byte, bind *BindThreadState, typeMap *
 										v32_ = uint32(0)
 										for shift = uint(0); ; shift += 7 {
 											if shift >= 32 {
-												return 0, def.ErrIntOverflow
+												return 0, ErrIntOverflow
 											}
 											if pos >= l {
 												return 0, io.ErrUnexpectedEOF
@@ -426,7 +425,7 @@ func (this *ThreadStateList) Parse(data []byte, bind *BindThreadState, typeMap *
 										v32_ = uint32(0)
 										for shift = uint(0); ; shift += 7 {
 											if shift >= 32 {
-												return 0, def.ErrIntOverflow
+												return 0, ErrIntOverflow
 											}
 											if pos >= l {
 												return 0, io.ErrUnexpectedEOF
@@ -444,7 +443,7 @@ func (this *ThreadStateList) Parse(data []byte, bind *BindThreadState, typeMap *
 											v32_ = uint32(0)
 											for shift = uint(0); ; shift += 7 {
 												if shift >= 32 {
-													return 0, def.ErrIntOverflow
+													return 0, ErrIntOverflow
 												}
 												if pos >= l {
 													return 0, io.ErrUnexpectedEOF
@@ -466,7 +465,7 @@ func (this *ThreadStateList) Parse(data []byte, bind *BindThreadState, typeMap *
 									v32_ = uint32(0)
 									for shift = uint(0); ; shift += 7 {
 										if shift >= 32 {
-											return 0, def.ErrIntOverflow
+											return 0, ErrIntOverflow
 										}
 										if pos >= l {
 											return 0, io.ErrUnexpectedEOF
@@ -482,7 +481,7 @@ func (this *ThreadStateList) Parse(data []byte, bind *BindThreadState, typeMap *
 									v32_ = uint32(0)
 									for shift = uint(0); ; shift += 7 {
 										if shift >= 32 {
-											return 0, def.ErrIntOverflow
+											return 0, ErrIntOverflow
 										}
 										if pos >= l {
 											return 0, io.ErrUnexpectedEOF
@@ -516,7 +515,7 @@ func (this *ThreadStateList) Parse(data []byte, bind *BindThreadState, typeMap *
 									v16_ = uint16(0)
 									for shift = uint(0); ; shift += 7 {
 										if shift >= 16 {
-											return 0, def.ErrIntOverflow
+											return 0, ErrIntOverflow
 										}
 										if pos >= l {
 											return 0, io.ErrUnexpectedEOF

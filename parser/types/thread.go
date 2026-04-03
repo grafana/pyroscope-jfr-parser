@@ -4,7 +4,6 @@ package types
 
 import (
 	"fmt"
-	"github.com/grafana/jfr-parser/parser/types/def"
 	"io"
 	"unsafe"
 )
@@ -15,36 +14,36 @@ type BindThread struct {
 }
 
 type BindFieldThread struct {
-	Field  *def.Field
+	Field  *Field
 	string *string
 	uint64 *uint64
 }
 
-func NewBindThread(typ *def.Class, typeMap *def.TypeMap) *BindThread {
+func NewBindThread(typ *MetadataClass, typeMap *TypeMap) *BindThread {
 	res := new(BindThread)
 	res.Fields = make([]BindFieldThread, 0, len(typ.Fields))
 	for i := 0; i < len(typ.Fields); i++ {
 		switch typ.Fields[i].Name {
 		case "osName":
-			if typ.Fields[i].Equals(&def.Field{Name: "osName", Type: typeMap.T_STRING, ConstantPool: false, Array: false}) {
+			if typ.Fields[i].Equals(&Field{Name: "osName", Type: typeMap.T_STRING, ConstantPool: false, Array: false}) {
 				res.Fields = append(res.Fields, BindFieldThread{Field: &typ.Fields[i], string: &res.Temp.OsName})
 			} else {
 				res.Fields = append(res.Fields, BindFieldThread{Field: &typ.Fields[i]}) // skip changed field
 			}
 		case "osThreadId":
-			if typ.Fields[i].Equals(&def.Field{Name: "osThreadId", Type: typeMap.T_LONG, ConstantPool: false, Array: false}) {
+			if typ.Fields[i].Equals(&Field{Name: "osThreadId", Type: typeMap.T_LONG, ConstantPool: false, Array: false}) {
 				res.Fields = append(res.Fields, BindFieldThread{Field: &typ.Fields[i], uint64: &res.Temp.OsThreadId})
 			} else {
 				res.Fields = append(res.Fields, BindFieldThread{Field: &typ.Fields[i]}) // skip changed field
 			}
 		case "javaName":
-			if typ.Fields[i].Equals(&def.Field{Name: "javaName", Type: typeMap.T_STRING, ConstantPool: false, Array: false}) {
+			if typ.Fields[i].Equals(&Field{Name: "javaName", Type: typeMap.T_STRING, ConstantPool: false, Array: false}) {
 				res.Fields = append(res.Fields, BindFieldThread{Field: &typ.Fields[i], string: &res.Temp.JavaName})
 			} else {
 				res.Fields = append(res.Fields, BindFieldThread{Field: &typ.Fields[i]}) // skip changed field
 			}
 		case "javaThreadId":
-			if typ.Fields[i].Equals(&def.Field{Name: "javaThreadId", Type: typeMap.T_LONG, ConstantPool: false, Array: false}) {
+			if typ.Fields[i].Equals(&Field{Name: "javaThreadId", Type: typeMap.T_LONG, ConstantPool: false, Array: false}) {
 				res.Fields = append(res.Fields, BindFieldThread{Field: &typ.Fields[i], uint64: &res.Temp.JavaThreadId})
 			} else {
 				res.Fields = append(res.Fields, BindFieldThread{Field: &typ.Fields[i]}) // skip changed field
@@ -73,7 +72,7 @@ func (this *ThreadList) Reset() {
 	this.IDMap = make(map[ThreadRef]uint32)
 	this.Thread = nil
 }
-func (this *ThreadList) Parse(data []byte, bind *BindThread, typeMap *def.TypeMap) (pos int, err error) {
+func (this *ThreadList) Parse(data []byte, bind *BindThread, typeMap *TypeMap) (pos int, err error) {
 	var (
 		v64_  uint64
 		v32_  uint32
@@ -90,7 +89,7 @@ func (this *ThreadList) Parse(data []byte, bind *BindThread, typeMap *def.TypeMa
 	v32_ = uint32(0)
 	for shift = uint(0); ; shift += 7 {
 		if shift >= 32 {
-			return 0, def.ErrIntOverflow
+			return 0, ErrIntOverflow
 		}
 		if pos >= l {
 			return 0, io.ErrUnexpectedEOF
@@ -131,7 +130,7 @@ func (this *ThreadList) Parse(data []byte, bind *BindThread, typeMap *def.TypeMa
 				v32_ = uint32(0)
 				for shift = uint(0); ; shift += 7 {
 					if shift >= 32 {
-						return 0, def.ErrIntOverflow
+						return 0, ErrIntOverflow
 					}
 					if pos >= l {
 						return 0, io.ErrUnexpectedEOF
@@ -183,7 +182,7 @@ func (this *ThreadList) Parse(data []byte, bind *BindThread, typeMap *def.TypeMa
 							v32_ = uint32(0)
 							for shift = uint(0); ; shift += 7 {
 								if shift >= 32 {
-									return 0, def.ErrIntOverflow
+									return 0, ErrIntOverflow
 								}
 								if pos >= l {
 									return 0, io.ErrUnexpectedEOF
@@ -205,7 +204,7 @@ func (this *ThreadList) Parse(data []byte, bind *BindThread, typeMap *def.TypeMa
 							v32_ = uint32(0)
 							for shift = uint(0); ; shift += 7 {
 								if shift >= 32 {
-									return 0, def.ErrIntOverflow
+									return 0, ErrIntOverflow
 								}
 								if pos >= l {
 									return 0, io.ErrUnexpectedEOF
@@ -228,7 +227,7 @@ func (this *ThreadList) Parse(data []byte, bind *BindThread, typeMap *def.TypeMa
 							v32_ = uint32(0)
 							for shift = uint(0); ; shift += 7 {
 								if shift >= 32 {
-									return 0, def.ErrIntOverflow
+									return 0, ErrIntOverflow
 								}
 								if pos >= l {
 									return 0, io.ErrUnexpectedEOF
@@ -246,7 +245,7 @@ func (this *ThreadList) Parse(data []byte, bind *BindThread, typeMap *def.TypeMa
 								v32_ = uint32(0)
 								for shift = uint(0); ; shift += 7 {
 									if shift >= 32 {
-										return 0, def.ErrIntOverflow
+										return 0, ErrIntOverflow
 									}
 									if pos >= l {
 										return 0, io.ErrUnexpectedEOF
@@ -271,7 +270,7 @@ func (this *ThreadList) Parse(data []byte, bind *BindThread, typeMap *def.TypeMa
 						v32_ = uint32(0)
 						for shift = uint(0); ; shift += 7 {
 							if shift >= 32 {
-								return 0, def.ErrIntOverflow
+								return 0, ErrIntOverflow
 							}
 							if pos >= l {
 								return 0, io.ErrUnexpectedEOF
@@ -309,7 +308,7 @@ func (this *ThreadList) Parse(data []byte, bind *BindThread, typeMap *def.TypeMa
 						v16_ = uint16(0)
 						for shift = uint(0); ; shift += 7 {
 							if shift >= 16 {
-								return 0, def.ErrIntOverflow
+								return 0, ErrIntOverflow
 							}
 							if pos >= l {
 								return 0, io.ErrUnexpectedEOF
@@ -333,7 +332,7 @@ func (this *ThreadList) Parse(data []byte, bind *BindThread, typeMap *def.TypeMa
 						v32_ = uint32(0)
 						for shift = uint(0); ; shift += 7 {
 							if shift >= 32 {
-								return 0, def.ErrIntOverflow
+								return 0, ErrIntOverflow
 							}
 							if pos >= l {
 								return 0, io.ErrUnexpectedEOF
@@ -356,7 +355,7 @@ func (this *ThreadList) Parse(data []byte, bind *BindThread, typeMap *def.TypeMa
 							v32_ = uint32(0)
 							for shift = uint(0); ; shift += 7 {
 								if shift >= 32 {
-									return 0, def.ErrIntOverflow
+									return 0, ErrIntOverflow
 								}
 								if pos >= l {
 									return 0, io.ErrUnexpectedEOF
@@ -377,7 +376,7 @@ func (this *ThreadList) Parse(data []byte, bind *BindThread, typeMap *def.TypeMa
 									v32_ = uint32(0)
 									for shift = uint(0); ; shift += 7 {
 										if shift >= 32 {
-											return 0, def.ErrIntOverflow
+											return 0, ErrIntOverflow
 										}
 										if pos >= l {
 											return 0, io.ErrUnexpectedEOF
@@ -405,7 +404,7 @@ func (this *ThreadList) Parse(data []byte, bind *BindThread, typeMap *def.TypeMa
 										v32_ = uint32(0)
 										for shift = uint(0); ; shift += 7 {
 											if shift >= 32 {
-												return 0, def.ErrIntOverflow
+												return 0, ErrIntOverflow
 											}
 											if pos >= l {
 												return 0, io.ErrUnexpectedEOF
@@ -427,7 +426,7 @@ func (this *ThreadList) Parse(data []byte, bind *BindThread, typeMap *def.TypeMa
 										v32_ = uint32(0)
 										for shift = uint(0); ; shift += 7 {
 											if shift >= 32 {
-												return 0, def.ErrIntOverflow
+												return 0, ErrIntOverflow
 											}
 											if pos >= l {
 												return 0, io.ErrUnexpectedEOF
@@ -450,7 +449,7 @@ func (this *ThreadList) Parse(data []byte, bind *BindThread, typeMap *def.TypeMa
 										v32_ = uint32(0)
 										for shift = uint(0); ; shift += 7 {
 											if shift >= 32 {
-												return 0, def.ErrIntOverflow
+												return 0, ErrIntOverflow
 											}
 											if pos >= l {
 												return 0, io.ErrUnexpectedEOF
@@ -468,7 +467,7 @@ func (this *ThreadList) Parse(data []byte, bind *BindThread, typeMap *def.TypeMa
 											v32_ = uint32(0)
 											for shift = uint(0); ; shift += 7 {
 												if shift >= 32 {
-													return 0, def.ErrIntOverflow
+													return 0, ErrIntOverflow
 												}
 												if pos >= l {
 													return 0, io.ErrUnexpectedEOF
@@ -490,7 +489,7 @@ func (this *ThreadList) Parse(data []byte, bind *BindThread, typeMap *def.TypeMa
 									v32_ = uint32(0)
 									for shift = uint(0); ; shift += 7 {
 										if shift >= 32 {
-											return 0, def.ErrIntOverflow
+											return 0, ErrIntOverflow
 										}
 										if pos >= l {
 											return 0, io.ErrUnexpectedEOF
@@ -506,7 +505,7 @@ func (this *ThreadList) Parse(data []byte, bind *BindThread, typeMap *def.TypeMa
 									v32_ = uint32(0)
 									for shift = uint(0); ; shift += 7 {
 										if shift >= 32 {
-											return 0, def.ErrIntOverflow
+											return 0, ErrIntOverflow
 										}
 										if pos >= l {
 											return 0, io.ErrUnexpectedEOF
@@ -540,7 +539,7 @@ func (this *ThreadList) Parse(data []byte, bind *BindThread, typeMap *def.TypeMa
 									v16_ = uint16(0)
 									for shift = uint(0); ; shift += 7 {
 										if shift >= 16 {
-											return 0, def.ErrIntOverflow
+											return 0, ErrIntOverflow
 										}
 										if pos >= l {
 											return 0, io.ErrUnexpectedEOF

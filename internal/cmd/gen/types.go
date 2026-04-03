@@ -3,64 +3,64 @@ package main
 import (
 	"fmt"
 
-	"github.com/grafana/jfr-parser/parser/types/def"
+	"github.com/grafana/jfr-parser/parser/types"
 )
 
 var (
-	T_METADATA                = def.TypeID(0)
-	T_CPOOL                   = def.TypeID(1)
-	T_BOOLEAN                 = def.TypeID(4)
-	T_CHAR                    = def.TypeID(5)
-	T_FLOAT                   = def.TypeID(6)
-	T_DOUBLE                  = def.TypeID(7)
-	T_BYTE                    = def.TypeID(8)
-	T_SHORT                   = def.TypeID(9)
-	T_INT                     = def.TypeID(10)
-	T_LONG                    = def.TypeID(11)
-	T_STRING                  = def.TypeID(20)
-	T_CLASS                   = def.TypeID(21)
-	T_THREAD                  = def.TypeID(22)
-	T_CLASS_LOADER            = def.TypeID(23)
-	T_FRAME_TYPE              = def.TypeID(24)
-	T_THREAD_STATE            = def.TypeID(25)
-	T_STACK_TRACE             = def.TypeID(26)
-	T_STACK_FRAME             = def.TypeID(27)
-	T_METHOD                  = def.TypeID(28)
-	T_PACKAGE                 = def.TypeID(29)
-	T_SYMBOL                  = def.TypeID(30)
-	T_LOG_LEVEL               = def.TypeID(31)
-	T_EVENT                   = def.TypeID(100)
-	T_EXECUTION_SAMPLE        = def.TypeID(101)
-	T_ALLOC_IN_NEW_TLAB       = def.TypeID(102)
-	T_ALLOC_OUTSIDE_TLAB      = def.TypeID(103)
-	T_MONITOR_ENTER           = def.TypeID(104)
-	T_THREAD_PARK             = def.TypeID(105)
-	T_CPU_LOAD                = def.TypeID(106)
-	T_ACTIVE_RECORDING        = def.TypeID(107)
-	T_ACTIVE_SETTING          = def.TypeID(108)
-	T_OS_INFORMATION          = def.TypeID(109)
-	T_CPU_INFORMATION         = def.TypeID(110)
-	T_JVM_INFORMATION         = def.TypeID(111)
-	T_INITIAL_SYSTEM_PROPERTY = def.TypeID(112)
-	T_NATIVE_LIBRARY          = def.TypeID(113)
-	T_LOG                     = def.TypeID(114)
-	T_LIVE_OBJECT             = def.TypeID(115)
-	T_WALL_CLOCK_SAMPLE       = def.TypeID(118)
-	T_MALLOC                  = def.TypeID(119)
-	T_FREE                    = def.TypeID(120)
-	T_ANNOTATION              = def.TypeID(200)
-	T_LABEL                   = def.TypeID(201)
-	T_CATEGORY                = def.TypeID(202)
-	T_TIMESTAMP               = def.TypeID(203)
-	T_TIMESPAN                = def.TypeID(204)
-	T_DATA_AMOUNT             = def.TypeID(205)
-	T_MEMORY_ADDRESS          = def.TypeID(206)
-	T_UNSIGNED                = def.TypeID(207)
-	T_PERCENTAGE              = def.TypeID(208)
-	T_ALLOC_SAMPLE            = def.TypeID(209)
+	T_METADATA                = types.TypeID(0)
+	T_CPOOL                   = types.TypeID(1)
+	T_BOOLEAN                 = types.TypeID(4)
+	T_CHAR                    = types.TypeID(5)
+	T_FLOAT                   = types.TypeID(6)
+	T_DOUBLE                  = types.TypeID(7)
+	T_BYTE                    = types.TypeID(8)
+	T_SHORT                   = types.TypeID(9)
+	T_INT                     = types.TypeID(10)
+	T_LONG                    = types.TypeID(11)
+	T_STRING                  = types.TypeID(20)
+	T_CLASS                   = types.TypeID(21)
+	T_THREAD                  = types.TypeID(22)
+	T_CLASS_LOADER            = types.TypeID(23)
+	T_FRAME_TYPE              = types.TypeID(24)
+	T_THREAD_STATE            = types.TypeID(25)
+	T_STACK_TRACE             = types.TypeID(26)
+	T_STACK_FRAME             = types.TypeID(27)
+	T_METHOD                  = types.TypeID(28)
+	T_PACKAGE                 = types.TypeID(29)
+	T_SYMBOL                  = types.TypeID(30)
+	T_LOG_LEVEL               = types.TypeID(31)
+	T_EVENT                   = types.TypeID(100)
+	T_EXECUTION_SAMPLE        = types.TypeID(101)
+	T_ALLOC_IN_NEW_TLAB       = types.TypeID(102)
+	T_ALLOC_OUTSIDE_TLAB      = types.TypeID(103)
+	T_MONITOR_ENTER           = types.TypeID(104)
+	T_THREAD_PARK             = types.TypeID(105)
+	T_CPU_LOAD                = types.TypeID(106)
+	T_ACTIVE_RECORDING        = types.TypeID(107)
+	T_ACTIVE_SETTING          = types.TypeID(108)
+	T_OS_INFORMATION          = types.TypeID(109)
+	T_CPU_INFORMATION         = types.TypeID(110)
+	T_JVM_INFORMATION         = types.TypeID(111)
+	T_INITIAL_SYSTEM_PROPERTY = types.TypeID(112)
+	T_NATIVE_LIBRARY          = types.TypeID(113)
+	T_LOG                     = types.TypeID(114)
+	T_LIVE_OBJECT             = types.TypeID(115)
+	T_WALL_CLOCK_SAMPLE       = types.TypeID(118)
+	T_MALLOC                  = types.TypeID(119)
+	T_FREE                    = types.TypeID(120)
+	T_ANNOTATION              = types.TypeID(200)
+	T_LABEL                   = types.TypeID(201)
+	T_CATEGORY                = types.TypeID(202)
+	T_TIMESTAMP               = types.TypeID(203)
+	T_TIMESPAN                = types.TypeID(204)
+	T_DATA_AMOUNT             = types.TypeID(205)
+	T_MEMORY_ADDRESS          = types.TypeID(206)
+	T_UNSIGNED                = types.TypeID(207)
+	T_PERCENTAGE              = types.TypeID(208)
+	T_ALLOC_SAMPLE            = types.TypeID(209)
 )
 
-func TypeID2Sym(id def.TypeID) string {
+func TypeID2Sym(id types.TypeID) string {
 	switch id {
 	case T_METADATA:
 		return "T_METADATA"
@@ -163,115 +163,115 @@ func TypeID2Sym(id def.TypeID) string {
 	}
 }
 
-var Type_boolean = def.Class{
+var Type_boolean = types.MetadataClass{
 	Name:   "boolean",
 	ID:     T_BOOLEAN,
-	Fields: []def.Field{},
+	Fields: []types.Field{},
 }
-var Type_char = def.Class{
+var Type_char = types.MetadataClass{
 	Name:   "char",
 	ID:     T_CHAR,
-	Fields: []def.Field{},
+	Fields: []types.Field{},
 }
-var Type_float = def.Class{
+var Type_float = types.MetadataClass{
 	Name:   "float",
 	ID:     T_FLOAT,
-	Fields: []def.Field{},
+	Fields: []types.Field{},
 }
-var Type_double = def.Class{
+var Type_double = types.MetadataClass{
 	Name:   "double",
 	ID:     T_DOUBLE,
-	Fields: []def.Field{},
+	Fields: []types.Field{},
 }
-var Type_byte = def.Class{
+var Type_byte = types.MetadataClass{
 	Name:   "byte",
 	ID:     T_BYTE,
-	Fields: []def.Field{},
+	Fields: []types.Field{},
 }
-var Type_short = def.Class{
+var Type_short = types.MetadataClass{
 	Name:   "short",
 	ID:     T_SHORT,
-	Fields: []def.Field{},
+	Fields: []types.Field{},
 }
-var Type_int = def.Class{
+var Type_int = types.MetadataClass{
 	Name:   "int",
 	ID:     T_INT,
-	Fields: []def.Field{},
+	Fields: []types.Field{},
 }
-var Type_long = def.Class{
+var Type_long = types.MetadataClass{
 	Name:   "long",
 	ID:     T_LONG,
-	Fields: []def.Field{},
+	Fields: []types.Field{},
 }
-var Type_java_lang_String = def.Class{
+var Type_java_lang_String = types.MetadataClass{
 	Name:   "java.lang.String",
 	ID:     T_STRING,
-	Fields: []def.Field{},
+	Fields: []types.Field{},
 }
-var Type_java_lang_Class = def.Class{
+var Type_java_lang_Class = types.MetadataClass{
 	Name: "java.lang.Class",
 	ID:   T_CLASS,
-	Fields: []def.Field{
+	Fields: []types.Field{
 		{Name: "classLoader", Type: T_CLASS_LOADER, ConstantPool: true},
 		{Name: "name", Type: T_SYMBOL, ConstantPool: true},
 		{Name: "package", Type: T_PACKAGE, ConstantPool: true},
 		{Name: "modifiers", Type: T_INT, ConstantPool: false},
 	},
 }
-var Type_java_lang_Thread = def.Class{
+var Type_java_lang_Thread = types.MetadataClass{
 	Name: "java.lang.Thread",
 	ID:   T_THREAD,
-	Fields: []def.Field{
+	Fields: []types.Field{
 		{Name: "osName", Type: T_STRING, ConstantPool: false},
 		{Name: "osThreadId", Type: T_LONG, ConstantPool: false},
 		{Name: "javaName", Type: T_STRING, ConstantPool: false},
 		{Name: "javaThreadId", Type: T_LONG, ConstantPool: false},
 	},
 }
-var Type_jdk_types_ClassLoader = def.Class{
+var Type_jdk_types_ClassLoader = types.MetadataClass{
 	Name: "jdk.types.ClassLoader",
 	ID:   T_CLASS_LOADER,
-	Fields: []def.Field{
+	Fields: []types.Field{
 		{Name: "type", Type: T_CLASS, ConstantPool: true},
 		{Name: "name", Type: T_SYMBOL, ConstantPool: true},
 	},
 }
-var Type_jdk_types_FrameType = def.Class{
+var Type_jdk_types_FrameType = types.MetadataClass{
 	Name: "jdk.types.FrameType",
 	ID:   T_FRAME_TYPE,
-	Fields: []def.Field{
+	Fields: []types.Field{
 		{Name: "description", Type: T_STRING, ConstantPool: false},
 	},
 }
-var Type_jdk_types_ThreadState = def.Class{
+var Type_jdk_types_ThreadState = types.MetadataClass{
 	Name: "jdk.types.ThreadState",
 	ID:   T_THREAD_STATE,
-	Fields: []def.Field{
+	Fields: []types.Field{
 		{Name: "name", Type: T_STRING, ConstantPool: false},
 	},
 }
-var Type_jdk_types_StackTrace = def.Class{
+var Type_jdk_types_StackTrace = types.MetadataClass{
 	Name: "jdk.types.StackTrace",
 	ID:   T_STACK_TRACE,
-	Fields: []def.Field{
+	Fields: []types.Field{
 		{Name: "truncated", Type: T_BOOLEAN, ConstantPool: false},
 		{Name: "frames", Type: T_STACK_FRAME, ConstantPool: false, Array: true},
 	},
 }
-var Type_jdk_types_StackFrame = def.Class{
+var Type_jdk_types_StackFrame = types.MetadataClass{
 	Name: "jdk.types.StackFrame",
 	ID:   T_STACK_FRAME,
-	Fields: []def.Field{
+	Fields: []types.Field{
 		{Name: "method", Type: T_METHOD, ConstantPool: true},
 		{Name: "lineNumber", Type: T_INT, ConstantPool: false},
 		{Name: "bytecodeIndex", Type: T_INT, ConstantPool: false},
 		{Name: "type", Type: T_FRAME_TYPE, ConstantPool: true},
 	},
 }
-var Type_jdk_types_Method = def.Class{
+var Type_jdk_types_Method = types.MetadataClass{
 	Name: "jdk.types.Method",
 	ID:   T_METHOD,
-	Fields: []def.Field{
+	Fields: []types.Field{
 		{Name: "type", Type: T_CLASS, ConstantPool: true},
 		{Name: "name", Type: T_SYMBOL, ConstantPool: true},
 		{Name: "descriptor", Type: T_SYMBOL, ConstantPool: true},
@@ -279,31 +279,31 @@ var Type_jdk_types_Method = def.Class{
 		{Name: "hidden", Type: T_BOOLEAN, ConstantPool: false},
 	},
 }
-var Type_jdk_types_Package = def.Class{
+var Type_jdk_types_Package = types.MetadataClass{
 	Name: "jdk.types.Package",
 	ID:   T_PACKAGE,
-	Fields: []def.Field{
+	Fields: []types.Field{
 		{Name: "name", Type: T_SYMBOL, ConstantPool: true},
 	},
 }
-var Type_jdk_types_Symbol = def.Class{
+var Type_jdk_types_Symbol = types.MetadataClass{
 	Name: "jdk.types.Symbol",
 	ID:   T_SYMBOL,
-	Fields: []def.Field{
+	Fields: []types.Field{
 		{Name: "string", Type: T_STRING, ConstantPool: false},
 	},
 }
-var Type_profiler_types_LogLevel = def.Class{
+var Type_profiler_types_LogLevel = types.MetadataClass{
 	Name: "profiler.types.LogLevel",
 	ID:   T_LOG_LEVEL,
-	Fields: []def.Field{
+	Fields: []types.Field{
 		{Name: "name", Type: T_STRING, ConstantPool: false},
 	},
 }
-var Type_jdk_ExecutionSample = def.Class{
+var Type_jdk_ExecutionSample = types.MetadataClass{
 	Name: "jdk.ExecutionSample",
 	ID:   T_EXECUTION_SAMPLE,
-	Fields: []def.Field{
+	Fields: []types.Field{
 		{Name: "startTime", Type: T_LONG, ConstantPool: false},
 		{Name: "sampledThread", Type: T_THREAD, ConstantPool: true},
 		{Name: "stackTrace", Type: T_STACK_TRACE, ConstantPool: true},
@@ -314,10 +314,10 @@ var Type_jdk_ExecutionSample = def.Class{
 	},
 }
 
-var Type_profiler_WallClockSample = def.Class{
+var Type_profiler_WallClockSample = types.MetadataClass{
 	Name: "profiler.WallClockSample",
 	ID:   T_WALL_CLOCK_SAMPLE,
-	Fields: []def.Field{
+	Fields: []types.Field{
 		{Name: "startTime", Type: T_LONG, ConstantPool: false},
 		{Name: "sampledThread", Type: T_THREAD, ConstantPool: true},
 		{Name: "stackTrace", Type: T_STACK_TRACE, ConstantPool: true},
@@ -329,10 +329,10 @@ var Type_profiler_WallClockSample = def.Class{
 	},
 }
 
-var Type_jdk_ObjectAllocationInNewTLAB = def.Class{
+var Type_jdk_ObjectAllocationInNewTLAB = types.MetadataClass{
 	Name: "jdk.ObjectAllocationInNewTLAB",
 	ID:   T_ALLOC_IN_NEW_TLAB,
-	Fields: []def.Field{
+	Fields: []types.Field{
 		{Name: "startTime", Type: T_LONG, ConstantPool: false},
 		{Name: "eventThread", Type: T_THREAD, ConstantPool: true},
 		{Name: "stackTrace", Type: T_STACK_TRACE, ConstantPool: true},
@@ -344,10 +344,10 @@ var Type_jdk_ObjectAllocationInNewTLAB = def.Class{
 		{Name: "spanName", Type: T_LONG, ConstantPool: false},
 	},
 }
-var Type_jdk_ObjectAllocationOutsideTLAB = def.Class{
+var Type_jdk_ObjectAllocationOutsideTLAB = types.MetadataClass{
 	Name: "jdk.ObjectAllocationOutsideTLAB",
 	ID:   T_ALLOC_OUTSIDE_TLAB,
-	Fields: []def.Field{
+	Fields: []types.Field{
 		{Name: "startTime", Type: T_LONG, ConstantPool: false},
 		{Name: "eventThread", Type: T_THREAD, ConstantPool: true},
 		{Name: "stackTrace", Type: T_STACK_TRACE, ConstantPool: true},
@@ -358,10 +358,10 @@ var Type_jdk_ObjectAllocationOutsideTLAB = def.Class{
 		{Name: "spanName", Type: T_LONG, ConstantPool: false},
 	},
 }
-var Type_jdk_ObjectAllocationSample = def.Class{
+var Type_jdk_ObjectAllocationSample = types.MetadataClass{
 	Name: "jdk.ObjectAllocationSample",
 	ID:   T_ALLOC_SAMPLE,
-	Fields: []def.Field{
+	Fields: []types.Field{
 		{Name: "startTime", Type: T_LONG, ConstantPool: false},
 		{Name: "eventThread", Type: T_THREAD, ConstantPool: true},
 		{Name: "stackTrace", Type: T_STACK_TRACE, ConstantPool: true},
@@ -369,10 +369,10 @@ var Type_jdk_ObjectAllocationSample = def.Class{
 		{Name: "weight", Type: T_LONG, ConstantPool: false},
 	},
 }
-var Type_jdk_JavaMonitorEnter = def.Class{
+var Type_jdk_JavaMonitorEnter = types.MetadataClass{
 	Name: "jdk.JavaMonitorEnter",
 	ID:   T_MONITOR_ENTER,
-	Fields: []def.Field{
+	Fields: []types.Field{
 		{Name: "startTime", Type: T_LONG, ConstantPool: false},
 		{Name: "duration", Type: T_LONG, ConstantPool: false},
 		{Name: "eventThread", Type: T_THREAD, ConstantPool: true},
@@ -385,10 +385,10 @@ var Type_jdk_JavaMonitorEnter = def.Class{
 		{Name: "spanName", Type: T_LONG, ConstantPool: false},
 	},
 }
-var Type_jdk_ThreadPark = def.Class{
+var Type_jdk_ThreadPark = types.MetadataClass{
 	Name: "jdk.ThreadPark",
 	ID:   T_THREAD_PARK,
-	Fields: []def.Field{
+	Fields: []types.Field{
 		{Name: "startTime", Type: T_LONG, ConstantPool: false},
 		{Name: "duration", Type: T_LONG, ConstantPool: false},
 		{Name: "eventThread", Type: T_THREAD, ConstantPool: true},
@@ -399,20 +399,20 @@ var Type_jdk_ThreadPark = def.Class{
 		{Name: "address", Type: T_LONG, ConstantPool: false},
 	},
 }
-var Type_jdk_CPULoad = def.Class{
+var Type_jdk_CPULoad = types.MetadataClass{
 	Name: "jdk.CPULoad",
 	ID:   T_CPU_LOAD,
-	Fields: []def.Field{
+	Fields: []types.Field{
 		{Name: "startTime", Type: T_LONG, ConstantPool: false},
 		{Name: "jvmUser", Type: T_FLOAT, ConstantPool: false},
 		{Name: "jvmSystem", Type: T_FLOAT, ConstantPool: false},
 		{Name: "machineTotal", Type: T_FLOAT, ConstantPool: false},
 	},
 }
-var Type_jdk_ActiveRecording = def.Class{
+var Type_jdk_ActiveRecording = types.MetadataClass{
 	Name: "jdk.ActiveRecording",
 	ID:   T_ACTIVE_RECORDING,
-	Fields: []def.Field{
+	Fields: []types.Field{
 		{Name: "startTime", Type: T_LONG, ConstantPool: false},
 		{Name: "duration", Type: T_LONG, ConstantPool: false},
 		{Name: "eventThread", Type: T_THREAD, ConstantPool: true},
@@ -425,10 +425,10 @@ var Type_jdk_ActiveRecording = def.Class{
 		{Name: "recordingDuration", Type: T_LONG, ConstantPool: false},
 	},
 }
-var Type_jdk_ActiveSetting = def.Class{
+var Type_jdk_ActiveSetting = types.MetadataClass{
 	Name: "jdk.ActiveSetting",
 	ID:   T_ACTIVE_SETTING,
-	Fields: []def.Field{
+	Fields: []types.Field{
 		{Name: "startTime", Type: T_LONG, ConstantPool: false},
 		{Name: "duration", Type: T_LONG, ConstantPool: false},
 		{Name: "eventThread", Type: T_THREAD, ConstantPool: true},
@@ -438,18 +438,18 @@ var Type_jdk_ActiveSetting = def.Class{
 		{Name: "value", Type: T_STRING, ConstantPool: false},
 	},
 }
-var Type_jdk_OSInformation = def.Class{
+var Type_jdk_OSInformation = types.MetadataClass{
 	Name: "jdk.OSInformation",
 	ID:   T_OS_INFORMATION,
-	Fields: []def.Field{
+	Fields: []types.Field{
 		{Name: "startTime", Type: T_LONG, ConstantPool: false},
 		{Name: "osVersion", Type: T_STRING, ConstantPool: false},
 	},
 }
-var Type_jdk_CPUInformation = def.Class{
+var Type_jdk_CPUInformation = types.MetadataClass{
 	Name: "jdk.CPUInformation",
 	ID:   T_CPU_INFORMATION,
-	Fields: []def.Field{
+	Fields: []types.Field{
 		{Name: "startTime", Type: T_LONG, ConstantPool: false},
 		{Name: "cpu", Type: T_STRING, ConstantPool: false},
 		{Name: "description", Type: T_STRING, ConstantPool: false},
@@ -458,10 +458,10 @@ var Type_jdk_CPUInformation = def.Class{
 		{Name: "hwThreads", Type: T_INT, ConstantPool: false},
 	},
 }
-var Type_jdk_JVMInformation = def.Class{
+var Type_jdk_JVMInformation = types.MetadataClass{
 	Name: "jdk.JVMInformation",
 	ID:   T_JVM_INFORMATION,
-	Fields: []def.Field{
+	Fields: []types.Field{
 		{Name: "startTime", Type: T_LONG, ConstantPool: false},
 		{Name: "jvmName", Type: T_STRING, ConstantPool: false},
 		{Name: "jvmVersion", Type: T_STRING, ConstantPool: false},
@@ -472,38 +472,38 @@ var Type_jdk_JVMInformation = def.Class{
 		{Name: "pid", Type: T_LONG, ConstantPool: false},
 	},
 }
-var Type_jdk_InitialSystemProperty = def.Class{
+var Type_jdk_InitialSystemProperty = types.MetadataClass{
 	Name: "jdk.InitialSystemProperty",
 	ID:   T_INITIAL_SYSTEM_PROPERTY,
-	Fields: []def.Field{
+	Fields: []types.Field{
 		{Name: "startTime", Type: T_LONG, ConstantPool: false},
 		{Name: "key", Type: T_STRING, ConstantPool: false},
 		{Name: "value", Type: T_STRING, ConstantPool: false},
 	},
 }
-var Type_jdk_NativeLibrary = def.Class{
+var Type_jdk_NativeLibrary = types.MetadataClass{
 	Name: "jdk.NativeLibrary",
 	ID:   T_NATIVE_LIBRARY,
-	Fields: []def.Field{
+	Fields: []types.Field{
 		{Name: "startTime", Type: T_LONG, ConstantPool: false},
 		{Name: "name", Type: T_STRING, ConstantPool: false},
 		{Name: "baseAddress", Type: T_LONG, ConstantPool: false},
 		{Name: "topAddress", Type: T_LONG, ConstantPool: false},
 	},
 }
-var Type_profiler_Log = def.Class{
+var Type_profiler_Log = types.MetadataClass{
 	Name: "profiler.Log",
 	ID:   T_LOG,
-	Fields: []def.Field{
+	Fields: []types.Field{
 		{Name: "startTime", Type: T_LONG, ConstantPool: false},
 		{Name: "level", Type: T_LOG_LEVEL, ConstantPool: true},
 		{Name: "message", Type: T_STRING, ConstantPool: false},
 	},
 }
-var Type_profiler_LiveObject = def.Class{
+var Type_profiler_LiveObject = types.MetadataClass{
 	Name: "profiler.LiveObject",
 	ID:   T_LIVE_OBJECT,
-	Fields: []def.Field{
+	Fields: []types.Field{
 		{Name: "startTime", Type: T_LONG, ConstantPool: false},
 		{Name: "eventThread", Type: T_THREAD, ConstantPool: true},
 		{Name: "stackTrace", Type: T_STACK_TRACE, ConstantPool: true},
@@ -512,61 +512,61 @@ var Type_profiler_LiveObject = def.Class{
 		{Name: "allocationTime", Type: T_LONG, ConstantPool: false},
 	},
 }
-var Type_jdk_jfr_Label = def.Class{
+var Type_jdk_jfr_Label = types.MetadataClass{
 	Name: "jdk.jfr.Label",
 	ID:   T_LABEL,
-	Fields: []def.Field{
+	Fields: []types.Field{
 		{Name: "value", Type: T_STRING, ConstantPool: false},
 	},
 }
-var Type_jdk_jfr_Category = def.Class{
+var Type_jdk_jfr_Category = types.MetadataClass{
 	Name: "jdk.jfr.Category",
 	ID:   T_CATEGORY,
-	Fields: []def.Field{
+	Fields: []types.Field{
 		{Name: "value", Type: T_STRING, ConstantPool: false, Array: true},
 	},
 }
-var Type_jdk_jfr_Timestamp = def.Class{
+var Type_jdk_jfr_Timestamp = types.MetadataClass{
 	Name: "jdk.jfr.Timestamp",
 	ID:   T_TIMESTAMP,
-	Fields: []def.Field{
+	Fields: []types.Field{
 		{Name: "value", Type: T_STRING, ConstantPool: false},
 	},
 }
-var Type_jdk_jfr_Timespan = def.Class{
+var Type_jdk_jfr_Timespan = types.MetadataClass{
 	Name: "jdk.jfr.Timespan",
 	ID:   T_TIMESPAN,
-	Fields: []def.Field{
+	Fields: []types.Field{
 		{Name: "value", Type: T_STRING, ConstantPool: false},
 	},
 }
-var Type_jdk_jfr_DataAmount = def.Class{
+var Type_jdk_jfr_DataAmount = types.MetadataClass{
 	Name: "jdk.jfr.DataAmount",
 	ID:   T_DATA_AMOUNT,
-	Fields: []def.Field{
+	Fields: []types.Field{
 		{Name: "value", Type: T_STRING, ConstantPool: false},
 	},
 }
-var Type_jdk_jfr_MemoryAddress = def.Class{
+var Type_jdk_jfr_MemoryAddress = types.MetadataClass{
 	Name:   "jdk.jfr.MemoryAddress",
 	ID:     T_MEMORY_ADDRESS,
-	Fields: []def.Field{},
+	Fields: []types.Field{},
 }
-var Type_jdk_jfr_Unsigned = def.Class{
+var Type_jdk_jfr_Unsigned = types.MetadataClass{
 	Name:   "jdk.jfr.Unsigned",
 	ID:     T_UNSIGNED,
-	Fields: []def.Field{},
+	Fields: []types.Field{},
 }
-var Type_jdk_jfr_Percentage = def.Class{
+var Type_jdk_jfr_Percentage = types.MetadataClass{
 	Name:   "jdk.jfr.Percentage",
 	ID:     T_PERCENTAGE,
-	Fields: []def.Field{},
+	Fields: []types.Field{},
 }
 
-var Type_profiler_Malloc = def.Class{
+var Type_profiler_Malloc = types.MetadataClass{
 	Name: "profiler.Malloc",
 	ID:   T_MALLOC,
-	Fields: []def.Field{
+	Fields: []types.Field{
 		{Name: "startTime", Type: T_LONG, ConstantPool: false},
 		{Name: "eventThread", Type: T_THREAD, ConstantPool: true},
 		{Name: "stackTrace", Type: T_STACK_TRACE, ConstantPool: true},
@@ -575,10 +575,10 @@ var Type_profiler_Malloc = def.Class{
 	},
 }
 
-var Type_profiler_Free = def.Class{
+var Type_profiler_Free = types.MetadataClass{
 	Name: "profiler.Free",
 	ID:   T_FREE,
-	Fields: []def.Field{
+	Fields: []types.Field{
 		{Name: "startTime", Type: T_LONG, ConstantPool: false},
 		{Name: "eventThread", Type: T_THREAD, ConstantPool: true},
 		{Name: "stackTrace", Type: T_STACK_TRACE, ConstantPool: true},
