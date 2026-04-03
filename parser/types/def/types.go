@@ -36,6 +36,7 @@ type TypeMap struct {
 	T_LIVE_OBJECT        TypeID
 	T_MONITOR_ENTER      TypeID
 	T_THREAD_PARK        TypeID
+	T_THREAD_SLEEP       TypeID
 	T_ACTIVE_SETTING     TypeID
 	T_MALLOC             TypeID
 	T_FREE               TypeID

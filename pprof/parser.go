@@ -119,6 +119,9 @@ func parse(parser *parser.Parser, piOriginal *ParseInput, jfrLabels *LabelsSnaps
 		case parser.TypeMap.T_THREAD_PARK:
 			values[1] = int64(parser.ThreadPark.Duration)
 			builders.addStacktrace(sampleTypeThreadPark, StacktraceCorrelation{}, parser.ThreadPark.StackTrace, values[:2])
+		case parser.TypeMap.T_THREAD_SLEEP:
+			values[1] = int64(parser.ThreadSleep.Time)
+			builders.addStacktrace(sampleTypeThreadSleep, StacktraceCorrelation{}, parser.ThreadSleep.StackTrace, values[:2])
 		case parser.TypeMap.T_LIVE_OBJECT:
 			builders.addStacktrace(sampleTypeLiveObject, StacktraceCorrelation{}, parser.LiveObject.StackTrace, values[:1])
 		case parser.TypeMap.T_MALLOC:

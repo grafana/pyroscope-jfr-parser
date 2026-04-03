@@ -45,6 +45,7 @@ var (
 	T_NATIVE_LIBRARY          = def.TypeID(113)
 	T_LOG                     = def.TypeID(114)
 	T_LIVE_OBJECT             = def.TypeID(115)
+	T_THREAD_SLEEP            = def.TypeID(116)
 	T_WALL_CLOCK_SAMPLE       = def.TypeID(118)
 	T_MALLOC                  = def.TypeID(119)
 	T_FREE                    = def.TypeID(120)
@@ -140,6 +141,8 @@ func TypeID2Sym(id def.TypeID) string {
 		return "T_LOG"
 	case T_LIVE_OBJECT:
 		return "T_LIVE_OBJECT"
+	case T_THREAD_SLEEP:
+		return "T_THREAD_SLEEP"
 	case T_ANNOTATION:
 		return "T_ANNOTATION"
 	case T_LABEL:
@@ -397,6 +400,17 @@ var Type_jdk_ThreadPark = def.Class{
 		{Name: "timeout", Type: T_LONG, ConstantPool: false},
 		{Name: "until", Type: T_LONG, ConstantPool: false},
 		{Name: "address", Type: T_LONG, ConstantPool: false},
+	},
+}
+var Type_jdk_ThreadSleep = def.Class{
+	Name: "jdk.ThreadSleep",
+	ID:   T_THREAD_SLEEP,
+	Fields: []def.Field{
+		{Name: "startTime", Type: T_LONG, ConstantPool: false},
+		{Name: "duration", Type: T_LONG, ConstantPool: false},
+		{Name: "eventThread", Type: T_THREAD, ConstantPool: true},
+		{Name: "stackTrace", Type: T_STACK_TRACE, ConstantPool: true},
+		{Name: "time", Type: T_LONG, ConstantPool: false},
 	},
 }
 var Type_jdk_CPULoad = def.Class{

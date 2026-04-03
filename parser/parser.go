@@ -58,6 +58,7 @@ type Parser struct {
 	ObjectAllocationSample      types2.ObjectAllocationSample
 	JavaMonitorEnter            types2.JavaMonitorEnter
 	ThreadPark                  types2.ThreadPark
+	ThreadSleep                 types2.ThreadSleep
 	LiveObject                  types2.LiveObject
 	ActiveSetting               types2.ActiveSetting
 
@@ -89,6 +90,7 @@ type Parser struct {
 	bindAllocSample      *types2.BindObjectAllocationSample
 	bindMonitorEnter     *types2.BindJavaMonitorEnter
 	bindThreadPark       *types2.BindThreadPark
+	bindThreadSleep      *types2.BindThreadSleep
 	bindLiveObject       *types2.BindLiveObject
 	bindActiveSetting    *types2.BindActiveSetting
 	bindWallClockSample  *types2.BindWallClockSample
@@ -237,6 +239,18 @@ func (p *Parser) ParseEvent() (def.TypeID, error) {
 				continue
 			}
 			_, err := p.ThreadPark.Parse(p.buf[p.pos:], p.bindThreadPark, &p.TypeMap)
+			if err != nil {
+				return 0, err
+			}
+			p.pos = pp + int(size)
+			return ttyp, nil
+
+		case p.TypeMap.T_THREAD_SLEEP:
+			if p.bindThreadSleep == nil {
+				p.pos = pp + int(size) // skip
+				continue
+			}
+			_, err := p.ThreadSleep.Parse(p.buf[p.pos:], p.bindThreadSleep, &p.TypeMap)
 			if err != nil {
 				return 0, err
 			}
@@ -572,6 +586,7 @@ func (p *Parser) checkTypes() error {
 	typeAllocSample := p.TypeMap.NameMap["jdk.ObjectAllocationSample"]
 	typeMonitorEnter := p.TypeMap.NameMap["jdk.JavaMonitorEnter"]
 	typeThreadPark := p.TypeMap.NameMap["jdk.ThreadPark"]
+	typeThreadSleep := p.TypeMap.NameMap["jdk.ThreadSleep"]
 	typeLiveObject := p.TypeMap.NameMap["profiler.LiveObject"]
 	typeActiveSetting := p.TypeMap.NameMap["jdk.ActiveSetting"]
 
@@ -644,6 +659,14 @@ func (p *Parser) checkTypes() error {
 	} else {
 		p.TypeMap.T_THREAD_PARK = -1
 		p.bindThreadPark = nil
+	}
+
+	if typeThreadSleep != nil {
+		p.TypeMap.T_THREAD_SLEEP = typeThreadSleep.ID
+		p.bindThreadSleep = types2.NewBindThreadSleep(typeThreadSleep, &p.TypeMap)
+	} else {
+		p.TypeMap.T_THREAD_SLEEP = -1
+		p.bindThreadSleep = nil
 	}
 
 	if typeLiveObject != nil {

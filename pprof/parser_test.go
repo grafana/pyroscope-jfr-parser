@@ -134,20 +134,20 @@ var testFiles = []testdata{
 	{
 		jfr:           "cpool-uint64-constant-index",
 		labels:        "",
-		expectedCount: 5,
+		expectedCount: 6,
 		options:       nil,
 	},
 	{
 		jfr:           "event-with-type-zero",
 		labels:        "",
-		expectedCount: 5,
+		expectedCount: 6,
 		options:       nil,
 	},
 	{
 		jfr:           "event-with-type-zero",
 		testName:      "event-with-type-zero with truncated frame",
 		labels:        "",
-		expectedCount: 5,
+		expectedCount: 6,
 		options:       []Option{WithTruncatedFrame(true)},
 	},
 	{
@@ -197,7 +197,7 @@ var testFiles = []testdata{
 	{
 		jfr:           "threadsleep",
 		labels:        "",
-		expectedCount: 1,
+		expectedCount: 2,
 		options:       nil,
 	},
 }
