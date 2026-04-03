@@ -1,3 +1,5 @@
 .idea/
 internal/cmd/fuzz/corpus
 internal/cmd/fuzz/fuzz
+jfr-generators/**/*.jfr
+jfr-generators/**/*.class

@@ -255,7 +255,11 @@ func (p *Parser) ParseEvent() (def.TypeID, error) {
 			p.pos = pp + int(size)
 			return ttyp, nil
 		default:
-			//fmt.Printf("skipping %s %v\n", def.TypeID2Sym(ttyp), ttyp)
+			if c := p.TypeMap.IDMap[ttyp]; c != nil {
+				debugSkippedEvent(c.Name)
+			} else {
+				debugSkippedEvent("unknown")
+			}
 			p.pos = pp + int(size)
 		}
 	}

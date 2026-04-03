@@ -194,6 +194,12 @@ var testFiles = []testdata{
 		expectedCount: 2,
 		options:       nil,
 	},
+	{
+		jfr:           "threadsleep",
+		labels:        "",
+		expectedCount: 1,
+		options:       nil,
+	},
 }
 
 type gprofile struct {
