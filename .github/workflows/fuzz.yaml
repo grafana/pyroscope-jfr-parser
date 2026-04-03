@@ -25,4 +25,4 @@ jobs:
       - name: Build fuzzer
         run: make -C internal/cmd/fuzz
       - name: Fuzz
-        run: cd internal/cmd/fuzz && ./fuzz ../../../fuzz-corpus -max_total_time=14400 -rss_limit_mb=0 -timeout=100000
+        run: cd internal/cmd/fuzz && ./fuzz ./corpus -max_total_time=14400 -rss_limit_mb=0 -timeout=100000

@@ -31,11 +31,9 @@ coverage:
 fuzz: go-fuzz.a
 	$(CXX) -o fuzz go-fuzz.a $(LDFLAGS) -fsanitize=fuzzer
 
-ROOT_DIR := $(shell git rev-parse --show-toplevel)
-
 .PHONY: corpus
 corpus:
-	bash $(ROOT_DIR)/scripts/fuzz-corpus.sh $(ROOT_DIR)/fuzz-corpus
+	bash fuzz-corpus.sh
 
 clean:
 	$(RM) go-fuzz.a go-fuzz.h
