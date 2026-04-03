@@ -117,17 +117,6 @@ func initEventType[B any](
 	}
 }
 
-func parseEvent[P interface{ Parse([]byte, *B, *def.TypeMap) (int, error) }, B any](
-	p *Parser, ttyp def.TypeID, parser P, bind *B, pp int, size uint64,
-) (def.TypeID, error) {
-	_, err := parser.Parse(p.buf[p.pos:], bind, &p.TypeMap)
-	if err != nil {
-		return 0, err
-	}
-	p.pos = pp + int(size)
-	return ttyp, nil
-}
-
 func (p *Parser) ParseEvent() (def.TypeID, error) {
 	for {
 		if p.pos == p.chunkEnd {
@@ -158,30 +147,36 @@ func (p *Parser) ParseEvent() (def.TypeID, error) {
 		ttyp := def.TypeID(typ)
 		switch ttyp {
 		case p.TypeMap.T_EXECUTION_SAMPLE:
-			return parseEvent(p, ttyp, &p.ExecutionSample, p.bindExecutionSample, pp, size)
+			_, err = p.ExecutionSample.Parse(p.buf[p.pos:], p.bindExecutionSample, &p.TypeMap)
 		case p.TypeMap.T_WALL_CLOCK_SAMPLE:
-			return parseEvent(p, ttyp, &p.WallClockSample, p.bindWallClockSample, pp, size)
+			_, err = p.WallClockSample.Parse(p.buf[p.pos:], p.bindWallClockSample, &p.TypeMap)
 		case p.TypeMap.T_MALLOC:
-			return parseEvent(p, ttyp, &p.Malloc, p.bindMalloc, pp, size)
+			_, err = p.Malloc.Parse(p.buf[p.pos:], p.bindMalloc, &p.TypeMap)
 		case p.TypeMap.T_FREE:
-			return parseEvent(p, ttyp, &p.Free, p.bindFree, pp, size)
+			_, err = p.Free.Parse(p.buf[p.pos:], p.bindFree, &p.TypeMap)
 		case p.TypeMap.T_ALLOC_IN_NEW_TLAB:
-			return parseEvent(p, ttyp, &p.ObjectAllocationInNewTLAB, p.bindAllocInNewTLAB, pp, size)
+			_, err = p.ObjectAllocationInNewTLAB.Parse(p.buf[p.pos:], p.bindAllocInNewTLAB, &p.TypeMap)
 		case p.TypeMap.T_ALLOC_OUTSIDE_TLAB:
-			return parseEvent(p, ttyp, &p.ObjectAllocationOutsideTLAB, p.bindAllocOutsideTLAB, pp, size)
+			_, err = p.ObjectAllocationOutsideTLAB.Parse(p.buf[p.pos:], p.bindAllocOutsideTLAB, &p.TypeMap)
 		case p.TypeMap.T_ALLOC_SAMPLE:
-			return parseEvent(p, ttyp, &p.ObjectAllocationSample, p.bindAllocSample, pp, size)
+			_, err = p.ObjectAllocationSample.Parse(p.buf[p.pos:], p.bindAllocSample, &p.TypeMap)
 		case p.TypeMap.T_LIVE_OBJECT:
-			return parseEvent(p, ttyp, &p.LiveObject, p.bindLiveObject, pp, size)
+			_, err = p.LiveObject.Parse(p.buf[p.pos:], p.bindLiveObject, &p.TypeMap)
 		case p.TypeMap.T_MONITOR_ENTER:
-			return parseEvent(p, ttyp, &p.JavaMonitorEnter, p.bindMonitorEnter, pp, size)
+			_, err = p.JavaMonitorEnter.Parse(p.buf[p.pos:], p.bindMonitorEnter, &p.TypeMap)
 		case p.TypeMap.T_THREAD_PARK:
-			return parseEvent(p, ttyp, &p.ThreadPark, p.bindThreadPark, pp, size)
+			_, err = p.ThreadPark.Parse(p.buf[p.pos:], p.bindThreadPark, &p.TypeMap)
 		case p.TypeMap.T_ACTIVE_SETTING:
-			return parseEvent(p, ttyp, &p.ActiveSetting, p.bindActiveSetting, pp, size)
+			_, err = p.ActiveSetting.Parse(p.buf[p.pos:], p.bindActiveSetting, &p.TypeMap)
 		default:
 			p.pos = pp + int(size)
+			continue
 		}
+		if err != nil {
+			return 0, err
+		}
+		p.pos = pp + int(size)
+		return ttyp, nil
 	}
 }
 
