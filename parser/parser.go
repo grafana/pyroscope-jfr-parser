@@ -74,33 +74,8 @@ func NewParser(buf []byte, options Options) *Parser {
 	p := &Parser{
 		options: options,
 		buf:     buf,
+		TypeMap: types2.NewTypeMap(),
 	}
-	// Required cpool types
-	p.TypeMap.T_STRING = types2.TypeBinding[types2.BindString]{Name: "java.lang.String", Factory: types2.NewBindString, Required: true}
-	p.TypeMap.T_FRAME_TYPE = types2.TypeBinding[types2.BindFrameType]{Name: "jdk.types.FrameType", Factory: types2.NewBindFrameType, Required: true}
-	p.TypeMap.T_THREAD_STATE = types2.TypeBinding[types2.BindThreadState]{Name: "jdk.types.ThreadState", Factory: types2.NewBindThreadState, Required: true}
-	p.TypeMap.T_THREAD = types2.TypeBinding[types2.BindThread]{Name: "java.lang.Thread", Factory: types2.NewBindThread, Required: true}
-	p.TypeMap.T_CLASS = types2.TypeBinding[types2.BindClass]{Name: "java.lang.Class", Factory: types2.NewBindClass, Required: true}
-	p.TypeMap.T_METHOD = types2.TypeBinding[types2.BindMethod]{Name: "jdk.types.Method", Factory: types2.NewBindMethod, Required: true}
-	p.TypeMap.T_PACKAGE = types2.TypeBinding[types2.BindPackage]{Name: "jdk.types.Package", Factory: types2.NewBindPackage, Required: true}
-	p.TypeMap.T_SYMBOL = types2.TypeBinding[types2.BindSymbol]{Name: "jdk.types.Symbol", Factory: types2.NewBindSymbol, Required: true}
-	p.TypeMap.T_STACK_TRACE = types2.TypeBinding[types2.BindStackTrace]{Name: "jdk.types.StackTrace", Factory: types2.NewBindStackTrace, Required: true}
-	p.TypeMap.T_STACK_FRAME = types2.TypeBinding[types2.BindStackFrame]{Name: "jdk.types.StackFrame", Factory: types2.NewBindStackFrame, Required: true}
-	p.TypeMap.T_CLASS_LOADER = types2.TypeBinding[types2.BindClassLoader]{Name: "jdk.types.ClassLoader", Factory: types2.NewBindClassLoader, Required: true}
-	// Optional cpool type
-	p.TypeMap.T_LOG_LEVEL = types2.TypeBinding[types2.BindLogLevel]{Name: "profiler.types.LogLevel", Factory: types2.NewBindLogLevel}
-	// Optional event types
-	p.TypeMap.T_EXECUTION_SAMPLE = types2.TypeBinding[types2.BindExecutionSample]{Name: "jdk.ExecutionSample", Factory: types2.NewBindExecutionSample}
-	p.TypeMap.T_WALL_CLOCK_SAMPLE = types2.TypeBinding[types2.BindWallClockSample]{Name: "profiler.WallClockSample", Factory: types2.NewBindWallClockSample}
-	p.TypeMap.T_MALLOC = types2.TypeBinding[types2.BindMalloc]{Name: "profiler.Malloc", Factory: types2.NewBindMalloc}
-	p.TypeMap.T_FREE = types2.TypeBinding[types2.BindFree]{Name: "profiler.Free", Factory: types2.NewBindFree}
-	p.TypeMap.T_ALLOC_IN_NEW_TLAB = types2.TypeBinding[types2.BindObjectAllocationInNewTLAB]{Name: "jdk.ObjectAllocationInNewTLAB", Factory: types2.NewBindObjectAllocationInNewTLAB}
-	p.TypeMap.T_ALLOC_OUTSIDE_TLAB = types2.TypeBinding[types2.BindObjectAllocationOutsideTLAB]{Name: "jdk.ObjectAllocationOutsideTLAB", Factory: types2.NewBindObjectAllocationOutsideTLAB}
-	p.TypeMap.T_ALLOC_SAMPLE = types2.TypeBinding[types2.BindObjectAllocationSample]{Name: "jdk.ObjectAllocationSample", Factory: types2.NewBindObjectAllocationSample}
-	p.TypeMap.T_MONITOR_ENTER = types2.TypeBinding[types2.BindJavaMonitorEnter]{Name: "jdk.JavaMonitorEnter", Factory: types2.NewBindJavaMonitorEnter}
-	p.TypeMap.T_THREAD_PARK = types2.TypeBinding[types2.BindThreadPark]{Name: "jdk.ThreadPark", Factory: types2.NewBindThreadPark}
-	p.TypeMap.T_LIVE_OBJECT = types2.TypeBinding[types2.BindLiveObject]{Name: "profiler.LiveObject", Factory: types2.NewBindLiveObject}
-	p.TypeMap.T_ACTIVE_SETTING = types2.TypeBinding[types2.BindActiveSetting]{Name: "jdk.ActiveSetting", Factory: types2.NewBindActiveSetting}
 	return p
 }
 
