@@ -175,7 +175,7 @@ func (p *Parser) ParseEvent() (def.TypeID, error) {
 			continue
 		}
 		if err != nil {
-			return 0, err
+			return def.UnsetTypeID, err
 		}
 		p.pos = pp + int(size)
 		return ttyp, nil
