@@ -74,8 +74,8 @@ func NewParser(buf []byte, options Options) *Parser {
 	p := &Parser{
 		options: options,
 		buf:     buf,
-		TypeMap: types2.NewTypeMap(),
 	}
+	p.TypeMap.InitBindings()
 	return p
 }
 

@@ -73,71 +73,52 @@ type TypeMap struct {
 	T_FREE               TypeBinding[BindFree]
 
 	ISO8859_1Decoder *encoding.Decoder
+
+	bindings []BindingResolver
 }
 
-func NewTypeMap() TypeMap {
-	return TypeMap{
-		// Required cpool types
-		T_STRING:       TypeBinding[BindString]{Name: "java.lang.String", Factory: NewBindString, Required: true},
-		T_FRAME_TYPE:   TypeBinding[BindFrameType]{Name: "jdk.types.FrameType", Factory: NewBindFrameType, Required: true},
-		T_THREAD_STATE: TypeBinding[BindThreadState]{Name: "jdk.types.ThreadState", Factory: NewBindThreadState, Required: true},
-		T_THREAD:       TypeBinding[BindThread]{Name: "java.lang.Thread", Factory: NewBindThread, Required: true},
-		T_CLASS:        TypeBinding[BindClass]{Name: "java.lang.Class", Factory: NewBindClass, Required: true},
-		T_METHOD:       TypeBinding[BindMethod]{Name: "jdk.types.Method", Factory: NewBindMethod, Required: true},
-		T_PACKAGE:      TypeBinding[BindPackage]{Name: "jdk.types.Package", Factory: NewBindPackage, Required: true},
-		T_SYMBOL:       TypeBinding[BindSymbol]{Name: "jdk.types.Symbol", Factory: NewBindSymbol, Required: true},
-		T_STACK_TRACE:  TypeBinding[BindStackTrace]{Name: "jdk.types.StackTrace", Factory: NewBindStackTrace, Required: true},
-		T_STACK_FRAME:  TypeBinding[BindStackFrame]{Name: "jdk.types.StackFrame", Factory: NewBindStackFrame, Required: true},
-		T_CLASS_LOADER: TypeBinding[BindClassLoader]{Name: "jdk.types.ClassLoader", Factory: NewBindClassLoader, Required: true},
-		// Optional cpool type
-		T_LOG_LEVEL: TypeBinding[BindLogLevel]{Name: "profiler.types.LogLevel", Factory: NewBindLogLevel},
-		// Optional event types
-		T_EXECUTION_SAMPLE:   TypeBinding[BindExecutionSample]{Name: "jdk.ExecutionSample", Factory: NewBindExecutionSample},
-		T_WALL_CLOCK_SAMPLE:  TypeBinding[BindWallClockSample]{Name: "profiler.WallClockSample", Factory: NewBindWallClockSample},
-		T_MALLOC:             TypeBinding[BindMalloc]{Name: "profiler.Malloc", Factory: NewBindMalloc},
-		T_FREE:               TypeBinding[BindFree]{Name: "profiler.Free", Factory: NewBindFree},
-		T_ALLOC_IN_NEW_TLAB:  TypeBinding[BindObjectAllocationInNewTLAB]{Name: "jdk.ObjectAllocationInNewTLAB", Factory: NewBindObjectAllocationInNewTLAB},
-		T_ALLOC_OUTSIDE_TLAB: TypeBinding[BindObjectAllocationOutsideTLAB]{Name: "jdk.ObjectAllocationOutsideTLAB", Factory: NewBindObjectAllocationOutsideTLAB},
-		T_ALLOC_SAMPLE:       TypeBinding[BindObjectAllocationSample]{Name: "jdk.ObjectAllocationSample", Factory: NewBindObjectAllocationSample},
-		T_MONITOR_ENTER:      TypeBinding[BindJavaMonitorEnter]{Name: "jdk.JavaMonitorEnter", Factory: NewBindJavaMonitorEnter},
-		T_THREAD_PARK:        TypeBinding[BindThreadPark]{Name: "jdk.ThreadPark", Factory: NewBindThreadPark},
-		T_LIVE_OBJECT:        TypeBinding[BindLiveObject]{Name: "profiler.LiveObject", Factory: NewBindLiveObject},
-		T_ACTIVE_SETTING:     TypeBinding[BindActiveSetting]{Name: "jdk.ActiveSetting", Factory: NewBindActiveSetting},
-	}
+func addBinding[B any](tm *TypeMap, tb *TypeBinding[B], name string, factory func(*MetadataClass, *TypeMap) *B, required bool) {
+	tb.Name = name
+	tb.Factory = factory
+	tb.Required = required
+	tm.bindings = append(tm.bindings, tb)
+}
+
+// initBindings registers all type bindings in dependency order.
+// Must be called on the final TypeMap location (not a temporary)
+// since it stores pointers to the TypeMap's fields.
+func (tm *TypeMap) InitBindings() {
+	tm.bindings = tm.bindings[:0]
+	// Order matters: factories check typeMap.T_*.TypeID of dependencies,
+	// so dependencies must resolve before dependents.
+	// Required cpool types (topologically sorted)
+	addBinding(tm, &tm.T_STRING, "java.lang.String", NewBindString, true)
+	addBinding(tm, &tm.T_SYMBOL, "jdk.types.Symbol", NewBindSymbol, true)
+	addBinding(tm, &tm.T_PACKAGE, "jdk.types.Package", NewBindPackage, true)
+	addBinding(tm, &tm.T_FRAME_TYPE, "jdk.types.FrameType", NewBindFrameType, true)
+	addBinding(tm, &tm.T_THREAD_STATE, "jdk.types.ThreadState", NewBindThreadState, true)
+	addBinding(tm, &tm.T_THREAD, "java.lang.Thread", NewBindThread, true)
+	addBinding(tm, &tm.T_CLASS_LOADER, "jdk.types.ClassLoader", NewBindClassLoader, true)
+	addBinding(tm, &tm.T_CLASS, "java.lang.Class", NewBindClass, true)
+	addBinding(tm, &tm.T_METHOD, "jdk.types.Method", NewBindMethod, true)
+	addBinding(tm, &tm.T_STACK_FRAME, "jdk.types.StackFrame", NewBindStackFrame, true)
+	addBinding(tm, &tm.T_STACK_TRACE, "jdk.types.StackTrace", NewBindStackTrace, true)
+	// Optional cpool type
+	addBinding(tm, &tm.T_LOG_LEVEL, "profiler.types.LogLevel", NewBindLogLevel, false)
+	// Optional event types
+	addBinding(tm, &tm.T_EXECUTION_SAMPLE, "jdk.ExecutionSample", NewBindExecutionSample, false)
+	addBinding(tm, &tm.T_WALL_CLOCK_SAMPLE, "profiler.WallClockSample", NewBindWallClockSample, false)
+	addBinding(tm, &tm.T_MALLOC, "profiler.Malloc", NewBindMalloc, false)
+	addBinding(tm, &tm.T_FREE, "profiler.Free", NewBindFree, false)
+	addBinding(tm, &tm.T_ALLOC_IN_NEW_TLAB, "jdk.ObjectAllocationInNewTLAB", NewBindObjectAllocationInNewTLAB, false)
+	addBinding(tm, &tm.T_ALLOC_OUTSIDE_TLAB, "jdk.ObjectAllocationOutsideTLAB", NewBindObjectAllocationOutsideTLAB, false)
+	addBinding(tm, &tm.T_ALLOC_SAMPLE, "jdk.ObjectAllocationSample", NewBindObjectAllocationSample, false)
+	addBinding(tm, &tm.T_MONITOR_ENTER, "jdk.JavaMonitorEnter", NewBindJavaMonitorEnter, false)
+	addBinding(tm, &tm.T_THREAD_PARK, "jdk.ThreadPark", NewBindThreadPark, false)
+	addBinding(tm, &tm.T_LIVE_OBJECT, "profiler.LiveObject", NewBindLiveObject, false)
+	addBinding(tm, &tm.T_ACTIVE_SETTING, "jdk.ActiveSetting", NewBindActiveSetting, false)
 }
 
 func (tm *TypeMap) Bindings() []BindingResolver {
-	// Order matters: factories check typeMap.T_*.TypeID of dependencies,
-	// so dependencies must resolve before dependents.
-	// String has no deps. Symbol depends on String. Package depends on Symbol.
-	// ClassLoader depends on Class+Symbol. Class depends on Symbol+ClassLoader+Package.
-	// Method depends on Class+Symbol. FrameType depends on String.
-	// ThreadState depends on String. Thread depends on String.
-	// StackFrame depends on Method+FrameType. StackTrace depends on StackFrame.
-	// LogLevel depends on String.
-	return []BindingResolver{
-		&tm.T_STRING,
-		&tm.T_SYMBOL,
-		&tm.T_PACKAGE,
-		&tm.T_FRAME_TYPE,
-		&tm.T_THREAD_STATE,
-		&tm.T_LOG_LEVEL,
-		&tm.T_THREAD,
-		&tm.T_CLASS_LOADER,
-		&tm.T_CLASS,
-		&tm.T_METHOD,
-		&tm.T_STACK_FRAME,
-		&tm.T_STACK_TRACE,
-		&tm.T_EXECUTION_SAMPLE,
-		&tm.T_WALL_CLOCK_SAMPLE,
-		&tm.T_ALLOC_IN_NEW_TLAB,
-		&tm.T_ALLOC_OUTSIDE_TLAB,
-		&tm.T_ALLOC_SAMPLE,
-		&tm.T_LIVE_OBJECT,
-		&tm.T_MONITOR_ENTER,
-		&tm.T_THREAD_PARK,
-		&tm.T_ACTIVE_SETTING,
-		&tm.T_MALLOC,
-		&tm.T_FREE,
-	}
+	return tm.bindings
 }
