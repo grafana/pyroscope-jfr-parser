@@ -5,8 +5,10 @@ package main
 // #include <stdint.h>
 import "C"
 import (
-	"github.com/grafana/jfr-parser/pprof"
 	"unsafe"
+
+	"github.com/grafana/jfr-parser/internal/cmd/fuzz/corpus"
+	"github.com/grafana/jfr-parser/pprof"
 )
 
 //export LLVMFuzzerInitialize
@@ -21,8 +23,8 @@ func LLVMFuzzerTestOneInput(data *C.char, size C.size_t) C.int {
 		return 0
 	}
 
-	fi := decodeFuzzInput(gdata)
-	_, _ = pprof.ParseJFR(fi.jfr, fi.parseInput, fi.labels, pprof.WithTruncatedFrame(fi.truncatedFrame), pprof.WithDisablePanicRecovery(true))
+	fi := corpus.Decode(gdata)
+	_, _ = pprof.ParseJFR(fi.JFR, fi.ParseInput, fi.Labels, pprof.WithTruncatedFrame(fi.TruncatedFrame), pprof.WithDisablePanicRecovery(true))
 	return 0
 }
 

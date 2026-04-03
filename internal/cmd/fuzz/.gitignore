@@ -1,4 +1,4 @@
 fuzz
 go-fuzz.a
 go-fuzz.h
-corpus/
+corpus/*.jfr

@@ -2,7 +2,6 @@ package main
 
 import (
 	"compress/gzip"
-	"encoding/binary"
 	"flag"
 	"fmt"
 	"io"
@@ -10,6 +9,8 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
+
+	"github.com/grafana/jfr-parser/internal/cmd/fuzz/corpus"
 )
 
 func repoRoot() string {
@@ -25,11 +26,11 @@ func main() {
 	rootDir := repoRoot()
 
 	testdata := flag.String("testdata", filepath.Join(rootDir, "parser", "testdata"), "directory containing .jfr.gz test files")
-	corpus := flag.String("corpus", "corpus", "output directory for decompressed corpus files")
+	corpusDir := flag.String("corpus", "corpus", "output directory for decompressed corpus files")
 	maxSize := flag.Int64("max-size", 524288, "maximum compressed file size in bytes")
 	flag.Parse()
 
-	if err := generate(*testdata, *corpus, *maxSize); err != nil {
+	if err := generate(*testdata, *corpusDir, *maxSize); err != nil {
 		fmt.Fprintf(os.Stderr, "error: %v\n", err)
 		os.Exit(1)
 	}
@@ -68,7 +69,7 @@ func generate(srcDir string, destDir string, maxCompressedSize int64) error {
 		name := strings.TrimSuffix(base, ".gz")
 		outPath := filepath.Join(destDir, name)
 
-		if err := os.WriteFile(outPath, encodeFuzzInput(jfrData, labels), 0o644); err != nil {
+		if err := os.WriteFile(outPath, corpus.Encode(jfrData, labels), 0o644); err != nil {
 			return fmt.Errorf("write %s: %w", outPath, err)
 		}
 	}
@@ -104,24 +105,4 @@ func findLabels(jfrGzPath string) ([]byte, error) {
 		}
 	}
 	return nil, nil
-}
-
-func encodeFuzzInput(jfrData []byte, labels []byte) []byte {
-	var flags byte
-	if len(labels) > 0 {
-		flags |= 1
-	}
-	buf := []byte{flags}
-	if len(labels) > 0 {
-		buf = append(buf, byte(len(labels)))
-		buf = append(buf, labels...)
-	}
-	ts := make([]byte, 8)
-	binary.LittleEndian.PutUint64(ts, 1706241880000)
-	buf = append(buf, ts...)
-	binary.LittleEndian.PutUint64(ts, 1706241890000)
-	buf = append(buf, ts...)
-	binary.LittleEndian.PutUint64(ts, 100)
-	buf = append(buf, ts...)
-	return append(buf, jfrData...)
 }

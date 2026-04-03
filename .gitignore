@@ -1,3 +1,3 @@
 .idea/
-internal/cmd/fuzz/corpus
+internal/cmd/fuzz/corpus/*.jfr
 internal/cmd/fuzz/fuzz
