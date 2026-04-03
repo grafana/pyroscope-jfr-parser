@@ -147,7 +147,7 @@ func (p *Parser) ParseEvent() (def.TypeID, error) {
 		ttyp := def.TypeID(typ)
 		switch ttyp {
 		case def.UnsetTypeID:
-			return 0, fmt.Errorf("invalid event type %d at position %d", typ, pp)
+			return def.UnsetTypeID, fmt.Errorf("invalid event type %d at position %d", typ, pp)
 		case p.TypeMap.T_EXECUTION_SAMPLE:
 			_, err = p.ExecutionSample.Parse(p.buf[p.pos:], p.bindExecutionSample, &p.TypeMap)
 		case p.TypeMap.T_WALL_CLOCK_SAMPLE:
