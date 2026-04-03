@@ -15,20 +15,20 @@ type BindingResolver interface {
 }
 
 type TypeBinding[B any] struct {
-	Name     string
+	name     string
 	TypeID   TypeID
 	Bind     *B
-	Factory  func(*MetadataClass, *TypeMap) *B
-	Required bool
+	factory  func(*MetadataClass, *TypeMap) *B
+	required bool
 }
 
 func (tb *TypeBinding[B]) Resolve(typeMap *TypeMap) error {
-	cls := typeMap.NameMap[tb.Name]
+	cls := typeMap.NameMap[tb.name]
 	if cls != nil {
 		tb.TypeID = cls.ID
-		tb.Bind = tb.Factory(cls, typeMap)
-	} else if tb.Required {
-		return fmt.Errorf("missing %q", tb.Name)
+		tb.Bind = tb.factory(cls, typeMap)
+	} else if tb.required {
+		return fmt.Errorf("missing %q", tb.name)
 	} else {
 		tb.TypeID = UnsetTypeID
 		tb.Bind = nil
@@ -78,9 +78,9 @@ type TypeMap struct {
 }
 
 func addBinding[B any](tm *TypeMap, tb *TypeBinding[B], name string, factory func(*MetadataClass, *TypeMap) *B, required bool) {
-	tb.Name = name
-	tb.Factory = factory
-	tb.Required = required
+	tb.name = name
+	tb.factory = factory
+	tb.required = required
 	tm.bindings = append(tm.bindings, tb)
 }
 
