@@ -23,6 +23,6 @@ jobs:
       - name: Prepare fuzz corpus
         run: make -C internal/cmd/fuzz corpus
       - name: Build fuzzer
-        run: make -C internal/cmd/fuzz
+        run: make -C internal/cmd/fuzz fuzz
       - name: Fuzz
         run: cd internal/cmd/fuzz && ./fuzz ./corpus -max_total_time=14400 -rss_limit_mb=0 -timeout=100000

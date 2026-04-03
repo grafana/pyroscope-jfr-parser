@@ -4,17 +4,24 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"os/exec"
 	"path/filepath"
-	"runtime"
+	"strings"
 
 	"github.com/grafana/jfr-parser/internal/cmd/fuzz/seedcorpus"
 )
 
+func repoRoot() string {
+	out, err := exec.Command("git", "rev-parse", "--show-toplevel").Output()
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "git rev-parse --show-toplevel: %v\n", err)
+		os.Exit(1)
+	}
+	return strings.TrimSpace(string(out))
+}
+
 func main() {
-	_, thisFile, _, _ := runtime.Caller(0)
-	// thisFile is internal/cmd/fuzz/seedcorpus/cmd/main.go
-	// repo root is 5 levels up
-	rootDir := filepath.Join(filepath.Dir(thisFile), "..", "..", "..", "..", "..")
+	rootDir := repoRoot()
 
 	testdata := flag.String("testdata", filepath.Join(rootDir, "parser", "testdata"), "directory containing .jfr.gz test files")
 	corpus := flag.String("corpus", "corpus", "output directory for decompressed corpus files")
