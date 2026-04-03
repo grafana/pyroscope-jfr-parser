@@ -1,4 +1,5 @@
 fuzz
+fuzz.log
 go-fuzz.a
 go-fuzz.h
 corpus/*.jfr
