@@ -104,6 +104,19 @@ func NewParser(buf []byte, options Options) *Parser {
 	return p
 }
 
+func initEventType[B any](
+	cls *def.Class, typeID *def.TypeID, bind **B,
+	newBind func(*def.Class, *def.TypeMap) *B, typeMap *def.TypeMap,
+) {
+	if cls != nil {
+		*typeID = cls.ID
+		*bind = newBind(cls, typeMap)
+	} else {
+		*typeID = def.UnsetTypeID
+		*bind = nil
+	}
+}
+
 func parseEvent[P interface{ Parse([]byte, *B, *def.TypeMap) (int, error) }, B any](
 	p *Parser, ttyp def.TypeID, parser P, bind *B, pp int, size uint64,
 ) (def.TypeID, error) {
@@ -485,89 +498,17 @@ func (p *Parser) checkTypes() error {
 	typeMalloc := p.TypeMap.NameMap["profiler.Malloc"]
 	typeFree := p.TypeMap.NameMap["profiler.Free"]
 
-	if typeExecutionSample != nil {
-		p.TypeMap.T_EXECUTION_SAMPLE = typeExecutionSample.ID
-		p.bindExecutionSample = types2.NewBindExecutionSample(typeExecutionSample, &p.TypeMap)
-	} else {
-		p.TypeMap.T_EXECUTION_SAMPLE = def.UnsetTypeID
-		p.bindExecutionSample = nil
-	}
-	if typeWallClockSample != nil {
-		p.TypeMap.T_WALL_CLOCK_SAMPLE = typeWallClockSample.ID
-		p.bindWallClockSample = types2.NewBindWallClockSample(typeWallClockSample, &p.TypeMap)
-	} else {
-		p.TypeMap.T_WALL_CLOCK_SAMPLE = def.UnsetTypeID
-		p.bindWallClockSample = nil
-	}
-	if typeMalloc != nil {
-		p.TypeMap.T_MALLOC = typeMalloc.ID
-		p.bindMalloc = types2.NewBindMalloc(typeMalloc, &p.TypeMap)
-	} else {
-		p.TypeMap.T_MALLOC = def.UnsetTypeID
-		p.bindMalloc = nil
-	}
-
-	if typeFree != nil {
-		p.TypeMap.T_FREE = typeFree.ID
-		p.bindFree = types2.NewBindFree(typeFree, &p.TypeMap)
-	} else {
-		p.TypeMap.T_FREE = def.UnsetTypeID
-		p.bindFree = nil
-	}
-
-	if typeAllocInNewTLAB != nil {
-		p.TypeMap.T_ALLOC_IN_NEW_TLAB = typeAllocInNewTLAB.ID
-		p.bindAllocInNewTLAB = types2.NewBindObjectAllocationInNewTLAB(typeAllocInNewTLAB, &p.TypeMap)
-	} else {
-		p.TypeMap.T_ALLOC_IN_NEW_TLAB = def.UnsetTypeID
-		p.bindAllocInNewTLAB = nil
-	}
-
-	if typeALlocOutsideTLAB != nil {
-		p.TypeMap.T_ALLOC_OUTSIDE_TLAB = typeALlocOutsideTLAB.ID
-		p.bindAllocOutsideTLAB = types2.NewBindObjectAllocationOutsideTLAB(typeALlocOutsideTLAB, &p.TypeMap)
-	} else {
-		p.TypeMap.T_ALLOC_OUTSIDE_TLAB = def.UnsetTypeID
-		p.bindAllocOutsideTLAB = nil
-	}
-	if typeAllocSample != nil {
-		p.TypeMap.T_ALLOC_SAMPLE = typeAllocSample.ID
-		p.bindAllocSample = types2.NewBindObjectAllocationSample(typeAllocSample, &p.TypeMap)
-	} else {
-		p.TypeMap.T_ALLOC_SAMPLE = def.UnsetTypeID
-		p.bindAllocSample = nil
-	}
-	if typeMonitorEnter != nil {
-		p.TypeMap.T_MONITOR_ENTER = typeMonitorEnter.ID
-		p.bindMonitorEnter = types2.NewBindJavaMonitorEnter(typeMonitorEnter, &p.TypeMap)
-	} else {
-		p.TypeMap.T_MONITOR_ENTER = def.UnsetTypeID
-		p.bindMonitorEnter = nil
-	}
-
-	if typeThreadPark != nil {
-		p.TypeMap.T_THREAD_PARK = typeThreadPark.ID
-		p.bindThreadPark = types2.NewBindThreadPark(typeThreadPark, &p.TypeMap)
-	} else {
-		p.TypeMap.T_THREAD_PARK = def.UnsetTypeID
-		p.bindThreadPark = nil
-	}
-
-	if typeLiveObject != nil {
-		p.TypeMap.T_LIVE_OBJECT = typeLiveObject.ID
-		p.bindLiveObject = types2.NewBindLiveObject(typeLiveObject, &p.TypeMap)
-	} else {
-		p.TypeMap.T_LIVE_OBJECT = def.UnsetTypeID
-		p.bindLiveObject = nil
-	}
-
-	if typeActiveSetting != nil {
-		p.TypeMap.T_ACTIVE_SETTING = typeActiveSetting.ID
-		p.bindActiveSetting = types2.NewBindActiveSetting(typeActiveSetting, &p.TypeMap)
-	} else {
-		p.TypeMap.T_ACTIVE_SETTING = def.UnsetTypeID
-		p.bindActiveSetting = nil
-	}
+	initEventType(typeExecutionSample, &p.TypeMap.T_EXECUTION_SAMPLE, &p.bindExecutionSample, types2.NewBindExecutionSample, &p.TypeMap)
+	initEventType(typeWallClockSample, &p.TypeMap.T_WALL_CLOCK_SAMPLE, &p.bindWallClockSample, types2.NewBindWallClockSample, &p.TypeMap)
+	initEventType(typeMalloc, &p.TypeMap.T_MALLOC, &p.bindMalloc, types2.NewBindMalloc, &p.TypeMap)
+	initEventType(typeFree, &p.TypeMap.T_FREE, &p.bindFree, types2.NewBindFree, &p.TypeMap)
+	initEventType(typeAllocInNewTLAB, &p.TypeMap.T_ALLOC_IN_NEW_TLAB, &p.bindAllocInNewTLAB, types2.NewBindObjectAllocationInNewTLAB, &p.TypeMap)
+	initEventType(typeALlocOutsideTLAB, &p.TypeMap.T_ALLOC_OUTSIDE_TLAB, &p.bindAllocOutsideTLAB, types2.NewBindObjectAllocationOutsideTLAB, &p.TypeMap)
+	initEventType(typeAllocSample, &p.TypeMap.T_ALLOC_SAMPLE, &p.bindAllocSample, types2.NewBindObjectAllocationSample, &p.TypeMap)
+	initEventType(typeMonitorEnter, &p.TypeMap.T_MONITOR_ENTER, &p.bindMonitorEnter, types2.NewBindJavaMonitorEnter, &p.TypeMap)
+	initEventType(typeThreadPark, &p.TypeMap.T_THREAD_PARK, &p.bindThreadPark, types2.NewBindThreadPark, &p.TypeMap)
+	initEventType(typeLiveObject, &p.TypeMap.T_LIVE_OBJECT, &p.bindLiveObject, types2.NewBindLiveObject, &p.TypeMap)
+	initEventType(typeActiveSetting, &p.TypeMap.T_ACTIVE_SETTING, &p.bindActiveSetting, types2.NewBindActiveSetting, &p.TypeMap)
 
 	p.FrameTypes.Reset()
 	p.ThreadStates.Reset()
