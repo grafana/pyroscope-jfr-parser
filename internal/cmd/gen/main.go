@@ -549,6 +549,14 @@ func emitString() string {
 	res += "	s_ = *(*string)(unsafe.Pointer(&bs))\n"
 	res += "	pos += int(v32_)\n"
 
+	res += "case 2:\n"
+	res += emitReadU64()
+	res += "	if typeMap.CPoolStrings != nil {\n"
+	res += "		if _s, _ok := typeMap.CPoolStrings[int64(v64_)]; _ok {\n"
+	res += "			s_ = _s\n"
+	res += "		}\n"
+	res += "	}\n"
+
 	res += "case 4:\n"
 	res += emitReadI32()
 	res += "	bl := int(v32_)\n"

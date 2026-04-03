@@ -220,6 +220,29 @@ func (this *ThreadPark) Parse(data []byte, bind *BindThreadPark, typeMap *def.Ty
 						bs, _ = typeMap.ISO8859_1Decoder.Bytes(bs)
 						s_ = *(*string)(unsafe.Pointer(&bs))
 						pos += int(v32_)
+					case 2:
+						v64_ = 0
+						for shift = uint(0); shift <= 56; shift += 7 {
+							if pos >= l {
+								return 0, io.ErrUnexpectedEOF
+							}
+							b_ = data[pos]
+							pos++
+							if shift == 56 {
+								v64_ |= uint64(b_&0xFF) << shift
+								break
+							} else {
+								v64_ |= uint64(b_&0x7F) << shift
+								if b_ < 0x80 {
+									break
+								}
+							}
+						}
+						if typeMap.CPoolStrings != nil {
+							if _s, _ok := typeMap.CPoolStrings[int64(v64_)]; _ok {
+								s_ = _s
+							}
+						}
 					case 4:
 						v32_ = uint32(0)
 						for shift = uint(0); ; shift += 7 {
@@ -440,6 +463,29 @@ func (this *ThreadPark) Parse(data []byte, bind *BindThreadPark, typeMap *def.Ty
 									bs, _ = typeMap.ISO8859_1Decoder.Bytes(bs)
 									s_ = *(*string)(unsafe.Pointer(&bs))
 									pos += int(v32_)
+								case 2:
+									v64_ = 0
+									for shift = uint(0); shift <= 56; shift += 7 {
+										if pos >= l {
+											return 0, io.ErrUnexpectedEOF
+										}
+										b_ = data[pos]
+										pos++
+										if shift == 56 {
+											v64_ |= uint64(b_&0xFF) << shift
+											break
+										} else {
+											v64_ |= uint64(b_&0x7F) << shift
+											if b_ < 0x80 {
+												break
+											}
+										}
+									}
+									if typeMap.CPoolStrings != nil {
+										if _s, _ok := typeMap.CPoolStrings[int64(v64_)]; _ok {
+											s_ = _s
+										}
+									}
 								case 4:
 									v32_ = uint32(0)
 									for shift = uint(0); ; shift += 7 {

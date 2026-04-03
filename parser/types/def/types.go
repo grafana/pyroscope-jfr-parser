@@ -41,4 +41,5 @@ type TypeMap struct {
 	T_FREE               TypeID
 
 	ISO8859_1Decoder *encoding.Decoder
+	CPoolStrings     map[int64]string
 }

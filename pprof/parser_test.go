@@ -197,7 +197,7 @@ var testFiles = []testdata{
 	{
 		jfr:           "string2",
 		labels:        "",
-		expectedCount: 1,
+		expectedCount: 2,
 		options:       nil,
 	},
 }

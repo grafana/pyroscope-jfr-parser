@@ -324,6 +324,10 @@ func (p *Parser) readChunk(pos int) error {
 	if err := p.readConstantPool(pos + p.header.OffsetConstantPool); err != nil {
 		return fmt.Errorf("error reading CP: %w @ %d", err, pos+p.header.OffsetConstantPool)
 	}
+	p.TypeMap.CPoolStrings = make(map[int64]string, len(p.Strings.IDMap))
+	for ref, idx := range p.Strings.IDMap {
+		p.TypeMap.CPoolStrings[int64(ref)] = p.Strings.String[idx].String
+	}
 	pp := p.options.SymbolProcessor
 	if pp != nil {
 		pp(&p.Symbols)
@@ -394,10 +398,21 @@ func (p *Parser) string() (string, error) {
 	}
 	b := p.buf[p.pos]
 	p.pos++
-	switch b { //todo implement 2
+	switch b {
 	case 0:
-		return "", nil //todo this should be nil
+		return "", nil
 	case 1:
+		return "", nil
+	case 2:
+		key, err := p.varLong()
+		if err != nil {
+			return "", err
+		}
+		if p.TypeMap.CPoolStrings != nil {
+			if s, ok := p.TypeMap.CPoolStrings[int64(key)]; ok {
+				return s, nil
+			}
+		}
 		return "", nil
 	case 3:
 		bs, err := p.bytes()
