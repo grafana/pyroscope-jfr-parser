@@ -7,7 +7,7 @@ import "C"
 import (
 	"unsafe"
 
-	"github.com/grafana/jfr-parser/internal/cmd/fuzz/corpus"
+	"github.com/grafana/jfr-parser/internal/corpus"
 	"github.com/grafana/jfr-parser/pprof"
 )
 

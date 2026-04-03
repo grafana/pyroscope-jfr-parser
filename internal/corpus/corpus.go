@@ -1,7 +1,13 @@
 package corpus
 
 import (
+	"compress/gzip"
 	"encoding/binary"
+	"fmt"
+	"io"
+	"os"
+	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/grafana/jfr-parser/pprof"
@@ -63,6 +69,80 @@ func Encode(jfrData []byte, labels []byte) []byte {
 	binary.LittleEndian.PutUint64(ts, 100)
 	buf = append(buf, ts...)
 	return append(buf, jfrData...)
+}
+
+// Generate finds .jfr.gz files in srcDir that are at most maxCompressedSize
+// bytes, decompresses them, wraps each in the fuzzer's binary input format
+// (including adjacent labels if present), and writes them to destDir.
+func Generate(srcDir string, destDir string, maxCompressedSize int64) error {
+	if err := os.MkdirAll(destDir, 0o755); err != nil {
+		return fmt.Errorf("mkdir %s: %w", destDir, err)
+	}
+
+	matches, err := filepath.Glob(filepath.Join(srcDir, "*.jfr.gz"))
+	if err != nil {
+		return fmt.Errorf("glob %s: %w", srcDir, err)
+	}
+
+	for _, m := range matches {
+		info, err := os.Stat(m)
+		if err != nil {
+			return fmt.Errorf("stat %s: %w", m, err)
+		}
+		if info.Size() > maxCompressedSize {
+			continue
+		}
+
+		jfrData, err := readGzip(m)
+		if err != nil {
+			return err
+		}
+
+		labels, err := findLabels(m)
+		if err != nil {
+			return err
+		}
+
+		base := filepath.Base(m)
+		name := strings.TrimSuffix(base, ".gz")
+		outPath := filepath.Join(destDir, name)
+
+		if err := os.WriteFile(outPath, Encode(jfrData, labels), 0o644); err != nil {
+			return fmt.Errorf("write %s: %w", outPath, err)
+		}
+	}
+	return nil
+}
+
+func readGzip(path string) ([]byte, error) {
+	f, err := os.Open(path)
+	if err != nil {
+		return nil, fmt.Errorf("open %s: %w", path, err)
+	}
+	defer f.Close()
+
+	gr, err := gzip.NewReader(f)
+	if err != nil {
+		return nil, fmt.Errorf("gzip reader %s: %w", path, err)
+	}
+	defer gr.Close()
+
+	data, err := io.ReadAll(gr)
+	if err != nil {
+		return nil, fmt.Errorf("decompress %s: %w", path, err)
+	}
+	return data, nil
+}
+
+func findLabels(jfrGzPath string) ([]byte, error) {
+	base := strings.TrimSuffix(jfrGzPath, ".jfr.gz")
+	for _, suffix := range []string{".labels.pb.gz", ".labels.gz"} {
+		path := base + suffix
+		if _, err := os.Stat(path); err == nil {
+			return readGzip(path)
+		}
+	}
+	return nil, nil
 }
 
 type reader struct {
