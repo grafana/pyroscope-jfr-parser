@@ -39,25 +39,25 @@ func NewBindJavaMonitorEnter(typ *MetadataClass, typeMap *TypeMap) *BindJavaMoni
 				res.Fields = append(res.Fields, BindFieldJavaMonitorEnter{Field: &typ.Fields[i]}) // skip changed field
 			}
 		case "eventThread":
-			if typ.Fields[i].Equals(&Field{Name: "eventThread", Type: typeMap.T_THREAD, ConstantPool: true, Array: false}) {
+			if typ.Fields[i].Equals(&Field{Name: "eventThread", Type: typeMap.T_THREAD.TypeID, ConstantPool: true, Array: false}) {
 				res.Fields = append(res.Fields, BindFieldJavaMonitorEnter{Field: &typ.Fields[i], ThreadRef: &res.Temp.EventThread})
 			} else {
 				res.Fields = append(res.Fields, BindFieldJavaMonitorEnter{Field: &typ.Fields[i]}) // skip changed field
 			}
 		case "stackTrace":
-			if typ.Fields[i].Equals(&Field{Name: "stackTrace", Type: typeMap.T_STACK_TRACE, ConstantPool: true, Array: false}) {
+			if typ.Fields[i].Equals(&Field{Name: "stackTrace", Type: typeMap.T_STACK_TRACE.TypeID, ConstantPool: true, Array: false}) {
 				res.Fields = append(res.Fields, BindFieldJavaMonitorEnter{Field: &typ.Fields[i], StackTraceRef: &res.Temp.StackTrace})
 			} else {
 				res.Fields = append(res.Fields, BindFieldJavaMonitorEnter{Field: &typ.Fields[i]}) // skip changed field
 			}
 		case "monitorClass":
-			if typ.Fields[i].Equals(&Field{Name: "monitorClass", Type: typeMap.T_CLASS, ConstantPool: true, Array: false}) {
+			if typ.Fields[i].Equals(&Field{Name: "monitorClass", Type: typeMap.T_CLASS.TypeID, ConstantPool: true, Array: false}) {
 				res.Fields = append(res.Fields, BindFieldJavaMonitorEnter{Field: &typ.Fields[i], ClassRef: &res.Temp.MonitorClass})
 			} else {
 				res.Fields = append(res.Fields, BindFieldJavaMonitorEnter{Field: &typ.Fields[i]}) // skip changed field
 			}
 		case "previousOwner":
-			if typ.Fields[i].Equals(&Field{Name: "previousOwner", Type: typeMap.T_THREAD, ConstantPool: true, Array: false}) {
+			if typ.Fields[i].Equals(&Field{Name: "previousOwner", Type: typeMap.T_THREAD.TypeID, ConstantPool: true, Array: false}) {
 				res.Fields = append(res.Fields, BindFieldJavaMonitorEnter{Field: &typ.Fields[i], ThreadRef: &res.Temp.PreviousOwner})
 			} else {
 				res.Fields = append(res.Fields, BindFieldJavaMonitorEnter{Field: &typ.Fields[i]}) // skip changed field
@@ -160,15 +160,15 @@ func (this *JavaMonitorEnter) Parse(data []byte, bind *BindJavaMonitorEnter, typ
 					}
 				}
 				switch bind.Fields[bindFieldIndex].Field.Type {
-				case typeMap.T_THREAD:
+				case typeMap.T_THREAD.TypeID:
 					if bind.Fields[bindFieldIndex].ThreadRef != nil {
 						*bind.Fields[bindFieldIndex].ThreadRef = ThreadRef(v64_)
 					}
-				case typeMap.T_STACK_TRACE:
+				case typeMap.T_STACK_TRACE.TypeID:
 					if bind.Fields[bindFieldIndex].StackTraceRef != nil {
 						*bind.Fields[bindFieldIndex].StackTraceRef = StackTraceRef(v64_)
 					}
-				case typeMap.T_CLASS:
+				case typeMap.T_CLASS.TypeID:
 					if bind.Fields[bindFieldIndex].ClassRef != nil {
 						*bind.Fields[bindFieldIndex].ClassRef = ClassRef(v64_)
 					}
@@ -176,7 +176,7 @@ func (this *JavaMonitorEnter) Parse(data []byte, bind *BindJavaMonitorEnter, typ
 			} else {
 				bindFieldTypeID := bind.Fields[bindFieldIndex].Field.Type
 				switch bindFieldTypeID {
-				case typeMap.T_STRING:
+				case typeMap.T_STRING.TypeID:
 					s_ = ""
 					if pos >= l {
 						return 0, io.ErrUnexpectedEOF
@@ -396,7 +396,7 @@ func (this *JavaMonitorEnter) Parse(data []byte, bind *BindJavaMonitorEnter, typ
 										break
 									}
 								}
-							} else if bindSkipFieldType == typeMap.T_STRING {
+							} else if bindSkipFieldType == typeMap.T_STRING.TypeID {
 								s_ = ""
 								if pos >= l {
 									return 0, io.ErrUnexpectedEOF

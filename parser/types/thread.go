@@ -25,7 +25,7 @@ func NewBindThread(typ *MetadataClass, typeMap *TypeMap) *BindThread {
 	for i := 0; i < len(typ.Fields); i++ {
 		switch typ.Fields[i].Name {
 		case "osName":
-			if typ.Fields[i].Equals(&Field{Name: "osName", Type: typeMap.T_STRING, ConstantPool: false, Array: false}) {
+			if typ.Fields[i].Equals(&Field{Name: "osName", Type: typeMap.T_STRING.TypeID, ConstantPool: false, Array: false}) {
 				res.Fields = append(res.Fields, BindFieldThread{Field: &typ.Fields[i], string: &res.Temp.OsName})
 			} else {
 				res.Fields = append(res.Fields, BindFieldThread{Field: &typ.Fields[i]}) // skip changed field
@@ -37,7 +37,7 @@ func NewBindThread(typ *MetadataClass, typeMap *TypeMap) *BindThread {
 				res.Fields = append(res.Fields, BindFieldThread{Field: &typ.Fields[i]}) // skip changed field
 			}
 		case "javaName":
-			if typ.Fields[i].Equals(&Field{Name: "javaName", Type: typeMap.T_STRING, ConstantPool: false, Array: false}) {
+			if typ.Fields[i].Equals(&Field{Name: "javaName", Type: typeMap.T_STRING.TypeID, ConstantPool: false, Array: false}) {
 				res.Fields = append(res.Fields, BindFieldThread{Field: &typ.Fields[i], string: &res.Temp.JavaName})
 			} else {
 				res.Fields = append(res.Fields, BindFieldThread{Field: &typ.Fields[i]}) // skip changed field
@@ -166,7 +166,7 @@ func (this *ThreadList) Parse(data []byte, bind *BindThread, typeMap *TypeMap) (
 				} else {
 					bindFieldTypeID := bind.Fields[bindFieldIndex].Field.Type
 					switch bindFieldTypeID {
-					case typeMap.T_STRING:
+					case typeMap.T_STRING.TypeID:
 						s_ = ""
 						if pos >= l {
 							return 0, io.ErrUnexpectedEOF
@@ -388,7 +388,7 @@ func (this *ThreadList) Parse(data []byte, bind *BindThread, typeMap *TypeMap) (
 											break
 										}
 									}
-								} else if bindSkipFieldType == typeMap.T_STRING {
+								} else if bindSkipFieldType == typeMap.T_STRING.TypeID {
 									s_ = ""
 									if pos >= l {
 										return 0, io.ErrUnexpectedEOF

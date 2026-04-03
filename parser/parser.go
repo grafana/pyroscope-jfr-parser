@@ -68,31 +68,6 @@ type Parser struct {
 	chunkEnd int
 
 	TypeMap types2.TypeMap
-
-	bindFrameType   *types2.BindFrameType
-	bindThreadState *types2.BindThreadState
-	bindThread      *types2.BindThread
-	bindClass       *types2.BindClass
-	bindMethod      *types2.BindMethod
-	bindPackage     *types2.BindPackage
-	bindSymbol      *types2.BindSymbol
-	bindLogLevel    *types2.BindLogLevel
-	bindStackFrame  *types2.BindStackFrame
-	bindStackTrace  *types2.BindStackTrace
-	bindString      *types2.BindString
-
-	bindExecutionSample *types2.BindExecutionSample
-
-	bindAllocInNewTLAB   *types2.BindObjectAllocationInNewTLAB
-	bindAllocOutsideTLAB *types2.BindObjectAllocationOutsideTLAB
-	bindAllocSample      *types2.BindObjectAllocationSample
-	bindMonitorEnter     *types2.BindJavaMonitorEnter
-	bindThreadPark       *types2.BindThreadPark
-	bindLiveObject       *types2.BindLiveObject
-	bindActiveSetting    *types2.BindActiveSetting
-	bindWallClockSample  *types2.BindWallClockSample
-	bindMalloc           *types2.BindMalloc
-	bindFree             *types2.BindFree
 }
 
 func NewParser(buf []byte, options Options) *Parser {
@@ -100,20 +75,33 @@ func NewParser(buf []byte, options Options) *Parser {
 		options: options,
 		buf:     buf,
 	}
+	// Required cpool types
+	p.TypeMap.T_STRING = types2.TypeBinding[types2.BindString]{Name: "java.lang.String", Factory: types2.NewBindString, Required: true}
+	p.TypeMap.T_FRAME_TYPE = types2.TypeBinding[types2.BindFrameType]{Name: "jdk.types.FrameType", Factory: types2.NewBindFrameType, Required: true}
+	p.TypeMap.T_THREAD_STATE = types2.TypeBinding[types2.BindThreadState]{Name: "jdk.types.ThreadState", Factory: types2.NewBindThreadState, Required: true}
+	p.TypeMap.T_THREAD = types2.TypeBinding[types2.BindThread]{Name: "java.lang.Thread", Factory: types2.NewBindThread, Required: true}
+	p.TypeMap.T_CLASS = types2.TypeBinding[types2.BindClass]{Name: "java.lang.Class", Factory: types2.NewBindClass, Required: true}
+	p.TypeMap.T_METHOD = types2.TypeBinding[types2.BindMethod]{Name: "jdk.types.Method", Factory: types2.NewBindMethod, Required: true}
+	p.TypeMap.T_PACKAGE = types2.TypeBinding[types2.BindPackage]{Name: "jdk.types.Package", Factory: types2.NewBindPackage, Required: true}
+	p.TypeMap.T_SYMBOL = types2.TypeBinding[types2.BindSymbol]{Name: "jdk.types.Symbol", Factory: types2.NewBindSymbol, Required: true}
+	p.TypeMap.T_STACK_TRACE = types2.TypeBinding[types2.BindStackTrace]{Name: "jdk.types.StackTrace", Factory: types2.NewBindStackTrace, Required: true}
+	p.TypeMap.T_STACK_FRAME = types2.TypeBinding[types2.BindStackFrame]{Name: "jdk.types.StackFrame", Factory: types2.NewBindStackFrame, Required: true}
+	p.TypeMap.T_CLASS_LOADER = types2.TypeBinding[types2.BindClassLoader]{Name: "jdk.types.ClassLoader", Factory: types2.NewBindClassLoader, Required: true}
+	// Optional cpool type
+	p.TypeMap.T_LOG_LEVEL = types2.TypeBinding[types2.BindLogLevel]{Name: "profiler.types.LogLevel", Factory: types2.NewBindLogLevel}
+	// Optional event types
+	p.TypeMap.T_EXECUTION_SAMPLE = types2.TypeBinding[types2.BindExecutionSample]{Name: "jdk.ExecutionSample", Factory: types2.NewBindExecutionSample}
+	p.TypeMap.T_WALL_CLOCK_SAMPLE = types2.TypeBinding[types2.BindWallClockSample]{Name: "profiler.WallClockSample", Factory: types2.NewBindWallClockSample}
+	p.TypeMap.T_MALLOC = types2.TypeBinding[types2.BindMalloc]{Name: "profiler.Malloc", Factory: types2.NewBindMalloc}
+	p.TypeMap.T_FREE = types2.TypeBinding[types2.BindFree]{Name: "profiler.Free", Factory: types2.NewBindFree}
+	p.TypeMap.T_ALLOC_IN_NEW_TLAB = types2.TypeBinding[types2.BindObjectAllocationInNewTLAB]{Name: "jdk.ObjectAllocationInNewTLAB", Factory: types2.NewBindObjectAllocationInNewTLAB}
+	p.TypeMap.T_ALLOC_OUTSIDE_TLAB = types2.TypeBinding[types2.BindObjectAllocationOutsideTLAB]{Name: "jdk.ObjectAllocationOutsideTLAB", Factory: types2.NewBindObjectAllocationOutsideTLAB}
+	p.TypeMap.T_ALLOC_SAMPLE = types2.TypeBinding[types2.BindObjectAllocationSample]{Name: "jdk.ObjectAllocationSample", Factory: types2.NewBindObjectAllocationSample}
+	p.TypeMap.T_MONITOR_ENTER = types2.TypeBinding[types2.BindJavaMonitorEnter]{Name: "jdk.JavaMonitorEnter", Factory: types2.NewBindJavaMonitorEnter}
+	p.TypeMap.T_THREAD_PARK = types2.TypeBinding[types2.BindThreadPark]{Name: "jdk.ThreadPark", Factory: types2.NewBindThreadPark}
+	p.TypeMap.T_LIVE_OBJECT = types2.TypeBinding[types2.BindLiveObject]{Name: "profiler.LiveObject", Factory: types2.NewBindLiveObject}
+	p.TypeMap.T_ACTIVE_SETTING = types2.TypeBinding[types2.BindActiveSetting]{Name: "jdk.ActiveSetting", Factory: types2.NewBindActiveSetting}
 	return p
-}
-
-func initEventType[B any](
-	cls *types2.MetadataClass, typeID *types2.TypeID, bind **B,
-	newBind func(*types2.MetadataClass, *types2.TypeMap) *B, typeMap *types2.TypeMap,
-) {
-	if cls != nil {
-		*typeID = cls.ID
-		*bind = newBind(cls, typeMap)
-	} else {
-		*typeID = types2.UnsetTypeID
-		*bind = nil
-	}
 }
 
 func (p *Parser) ParseEvent() (types2.TypeID, error) {
@@ -147,28 +135,28 @@ func (p *Parser) ParseEvent() (types2.TypeID, error) {
 		switch ttyp {
 		case types2.UnsetTypeID:
 			return types2.UnsetTypeID, fmt.Errorf("invalid event type %d at position %d", typ, pp)
-		case p.TypeMap.T_EXECUTION_SAMPLE:
-			_, err = p.ExecutionSample.Parse(p.buf[p.pos:], p.bindExecutionSample, &p.TypeMap)
-		case p.TypeMap.T_WALL_CLOCK_SAMPLE:
-			_, err = p.WallClockSample.Parse(p.buf[p.pos:], p.bindWallClockSample, &p.TypeMap)
-		case p.TypeMap.T_MALLOC:
-			_, err = p.Malloc.Parse(p.buf[p.pos:], p.bindMalloc, &p.TypeMap)
-		case p.TypeMap.T_FREE:
-			_, err = p.Free.Parse(p.buf[p.pos:], p.bindFree, &p.TypeMap)
-		case p.TypeMap.T_ALLOC_IN_NEW_TLAB:
-			_, err = p.ObjectAllocationInNewTLAB.Parse(p.buf[p.pos:], p.bindAllocInNewTLAB, &p.TypeMap)
-		case p.TypeMap.T_ALLOC_OUTSIDE_TLAB:
-			_, err = p.ObjectAllocationOutsideTLAB.Parse(p.buf[p.pos:], p.bindAllocOutsideTLAB, &p.TypeMap)
-		case p.TypeMap.T_ALLOC_SAMPLE:
-			_, err = p.ObjectAllocationSample.Parse(p.buf[p.pos:], p.bindAllocSample, &p.TypeMap)
-		case p.TypeMap.T_LIVE_OBJECT:
-			_, err = p.LiveObject.Parse(p.buf[p.pos:], p.bindLiveObject, &p.TypeMap)
-		case p.TypeMap.T_MONITOR_ENTER:
-			_, err = p.JavaMonitorEnter.Parse(p.buf[p.pos:], p.bindMonitorEnter, &p.TypeMap)
-		case p.TypeMap.T_THREAD_PARK:
-			_, err = p.ThreadPark.Parse(p.buf[p.pos:], p.bindThreadPark, &p.TypeMap)
-		case p.TypeMap.T_ACTIVE_SETTING:
-			_, err = p.ActiveSetting.Parse(p.buf[p.pos:], p.bindActiveSetting, &p.TypeMap)
+		case p.TypeMap.T_EXECUTION_SAMPLE.TypeID:
+			_, err = p.ExecutionSample.Parse(p.buf[p.pos:], p.TypeMap.T_EXECUTION_SAMPLE.Bind, &p.TypeMap)
+		case p.TypeMap.T_WALL_CLOCK_SAMPLE.TypeID:
+			_, err = p.WallClockSample.Parse(p.buf[p.pos:], p.TypeMap.T_WALL_CLOCK_SAMPLE.Bind, &p.TypeMap)
+		case p.TypeMap.T_MALLOC.TypeID:
+			_, err = p.Malloc.Parse(p.buf[p.pos:], p.TypeMap.T_MALLOC.Bind, &p.TypeMap)
+		case p.TypeMap.T_FREE.TypeID:
+			_, err = p.Free.Parse(p.buf[p.pos:], p.TypeMap.T_FREE.Bind, &p.TypeMap)
+		case p.TypeMap.T_ALLOC_IN_NEW_TLAB.TypeID:
+			_, err = p.ObjectAllocationInNewTLAB.Parse(p.buf[p.pos:], p.TypeMap.T_ALLOC_IN_NEW_TLAB.Bind, &p.TypeMap)
+		case p.TypeMap.T_ALLOC_OUTSIDE_TLAB.TypeID:
+			_, err = p.ObjectAllocationOutsideTLAB.Parse(p.buf[p.pos:], p.TypeMap.T_ALLOC_OUTSIDE_TLAB.Bind, &p.TypeMap)
+		case p.TypeMap.T_ALLOC_SAMPLE.TypeID:
+			_, err = p.ObjectAllocationSample.Parse(p.buf[p.pos:], p.TypeMap.T_ALLOC_SAMPLE.Bind, &p.TypeMap)
+		case p.TypeMap.T_LIVE_OBJECT.TypeID:
+			_, err = p.LiveObject.Parse(p.buf[p.pos:], p.TypeMap.T_LIVE_OBJECT.Bind, &p.TypeMap)
+		case p.TypeMap.T_MONITOR_ENTER.TypeID:
+			_, err = p.JavaMonitorEnter.Parse(p.buf[p.pos:], p.TypeMap.T_MONITOR_ENTER.Bind, &p.TypeMap)
+		case p.TypeMap.T_THREAD_PARK.TypeID:
+			_, err = p.ThreadPark.Parse(p.buf[p.pos:], p.TypeMap.T_THREAD_PARK.Bind, &p.TypeMap)
+		case p.TypeMap.T_ACTIVE_SETTING.TypeID:
+			_, err = p.ActiveSetting.Parse(p.buf[p.pos:], p.TypeMap.T_ACTIVE_SETTING.Bind, &p.TypeMap)
 		default:
 			p.pos = pp + int(size)
 			continue
@@ -372,139 +360,31 @@ func (p *Parser) bytes() ([]byte, error) {
 }
 
 func (p *Parser) checkTypes() error {
+	// Resolve primitive types (no bind, just TypeID)
+	primitives := []struct {
+		name   string
+		typeID *types2.TypeID
+	}{
+		{"int", &p.TypeMap.T_INT},
+		{"long", &p.TypeMap.T_LONG},
+		{"short", &p.TypeMap.T_SHORT},
+		{"float", &p.TypeMap.T_FLOAT},
+		{"boolean", &p.TypeMap.T_BOOLEAN},
+	}
+	for _, prim := range primitives {
+		cls := p.TypeMap.NameMap[prim.name]
+		if cls == nil {
+			return fmt.Errorf("missing %q", prim.name)
+		}
+		*prim.typeID = cls.ID
+	}
 
-	tint := p.TypeMap.NameMap["int"]
-	tlong := p.TypeMap.NameMap["long"]
-	tshort := p.TypeMap.NameMap["short"]
-	tfloat := p.TypeMap.NameMap["float"]
-	tboolean := p.TypeMap.NameMap["boolean"]
-	tstring := p.TypeMap.NameMap["java.lang.String"]
-
-	if tint == nil {
-		return fmt.Errorf("missing \"int\"")
+	// Resolve all type bindings (required ones error if absent)
+	for _, b := range p.TypeMap.Bindings() {
+		if err := b.Resolve(&p.TypeMap); err != nil {
+			return err
+		}
 	}
-	if tlong == nil {
-		return fmt.Errorf("missing \"long\"")
-	}
-	if tshort == nil {
-		return fmt.Errorf("missing \"short\"")
-	}
-	if tfloat == nil {
-		return fmt.Errorf("missing \"float\"")
-	}
-	if tboolean == nil {
-		return fmt.Errorf("missing \"boolean\"")
-	}
-	if tstring == nil {
-		return fmt.Errorf("missing \"java.lang.String\"")
-	}
-	p.TypeMap.T_INT = tint.ID
-	p.TypeMap.T_LONG = tlong.ID
-	p.TypeMap.T_SHORT = tshort.ID
-	p.TypeMap.T_FLOAT = tfloat.ID
-	p.TypeMap.T_BOOLEAN = tboolean.ID
-	p.TypeMap.T_STRING = tstring.ID
-
-	typeCPFrameType := p.TypeMap.NameMap["jdk.types.FrameType"]
-	typeCPThreadState := p.TypeMap.NameMap["jdk.types.ThreadState"]
-	typeCPThread := p.TypeMap.NameMap["java.lang.Thread"]
-	typeCPClass := p.TypeMap.NameMap["java.lang.Class"]
-	typeCPMethod := p.TypeMap.NameMap["jdk.types.Method"]
-	typeCPPackage := p.TypeMap.NameMap["jdk.types.Package"]
-	typeCPSymbol := p.TypeMap.NameMap["jdk.types.Symbol"]
-	typeCPLogLevel := p.TypeMap.NameMap["profiler.types.LogLevel"]
-	typeCPStackTrace := p.TypeMap.NameMap["jdk.types.StackTrace"]
-	typeCPClassLoader := p.TypeMap.NameMap["jdk.types.ClassLoader"]
-
-	if typeCPFrameType == nil {
-		return fmt.Errorf("missing \"jdk.types.FrameType\"")
-	}
-	if typeCPThreadState == nil {
-		return fmt.Errorf("missing \"jdk.types.ThreadState\"")
-	}
-	if typeCPThread == nil {
-		return fmt.Errorf("missing \"java.lang.Thread\"")
-	}
-	if typeCPClass == nil {
-		return fmt.Errorf("missing \"java.lang.Class\"")
-	}
-	if typeCPMethod == nil {
-		return fmt.Errorf("missing \"jdk.types.Method\"")
-	}
-	if typeCPPackage == nil {
-		return fmt.Errorf("missing \"jdk.types.Package\"")
-	}
-	if typeCPSymbol == nil {
-		return fmt.Errorf("missing \"jdk.types.Symbol\"")
-	}
-	if typeCPStackTrace == nil {
-		return fmt.Errorf("missing \"jdk.types.StackTrace\"")
-	}
-	if typeCPClassLoader == nil {
-		return fmt.Errorf("missing \"jdk.types.ClassLoader\"")
-	}
-	p.TypeMap.T_FRAME_TYPE = typeCPFrameType.ID
-	p.TypeMap.T_THREAD_STATE = typeCPThreadState.ID
-	p.TypeMap.T_THREAD = typeCPThread.ID
-	p.TypeMap.T_CLASS = typeCPClass.ID
-	p.TypeMap.T_METHOD = typeCPMethod.ID
-	p.TypeMap.T_PACKAGE = typeCPPackage.ID
-	p.TypeMap.T_SYMBOL = typeCPSymbol.ID
-	if typeCPLogLevel != nil {
-		p.TypeMap.T_LOG_LEVEL = typeCPLogLevel.ID
-	} else {
-		p.TypeMap.T_LOG_LEVEL = types2.UnsetTypeID
-	}
-	p.TypeMap.T_STACK_TRACE = typeCPStackTrace.ID
-	p.TypeMap.T_CLASS_LOADER = typeCPClassLoader.ID
-
-	typeStackFrame := p.TypeMap.NameMap["jdk.types.StackFrame"]
-
-	if typeStackFrame == nil {
-		return fmt.Errorf("missing \"jdk.types.StackFrame\"")
-	}
-	p.TypeMap.T_STACK_FRAME = typeStackFrame.ID
-
-	p.bindFrameType = types2.NewBindFrameType(typeCPFrameType, &p.TypeMap)
-	p.bindThreadState = types2.NewBindThreadState(typeCPThreadState, &p.TypeMap)
-	p.bindThread = types2.NewBindThread(typeCPThread, &p.TypeMap)
-	p.bindClass = types2.NewBindClass(typeCPClass, &p.TypeMap)
-	p.bindMethod = types2.NewBindMethod(typeCPMethod, &p.TypeMap)
-	p.bindPackage = types2.NewBindPackage(typeCPPackage, &p.TypeMap)
-	p.bindSymbol = types2.NewBindSymbol(typeCPSymbol, &p.TypeMap)
-	if typeCPLogLevel != nil {
-		p.bindLogLevel = types2.NewBindLogLevel(typeCPLogLevel, &p.TypeMap)
-	} else {
-		p.bindLogLevel = nil
-	}
-	p.bindStackTrace = types2.NewBindStackTrace(typeCPStackTrace, &p.TypeMap)
-	p.bindStackFrame = types2.NewBindStackFrame(typeStackFrame, &p.TypeMap)
-	p.bindString = types2.NewBindString(tstring, &p.TypeMap)
-
-	typeExecutionSample := p.TypeMap.NameMap["jdk.ExecutionSample"]
-	typeWallClockSample := p.TypeMap.NameMap["profiler.WallClockSample"]
-	typeAllocInNewTLAB := p.TypeMap.NameMap["jdk.ObjectAllocationInNewTLAB"]
-	typeALlocOutsideTLAB := p.TypeMap.NameMap["jdk.ObjectAllocationOutsideTLAB"]
-	typeAllocSample := p.TypeMap.NameMap["jdk.ObjectAllocationSample"]
-	typeMonitorEnter := p.TypeMap.NameMap["jdk.JavaMonitorEnter"]
-	typeThreadPark := p.TypeMap.NameMap["jdk.ThreadPark"]
-	typeLiveObject := p.TypeMap.NameMap["profiler.LiveObject"]
-	typeActiveSetting := p.TypeMap.NameMap["jdk.ActiveSetting"]
-
-	typeMalloc := p.TypeMap.NameMap["profiler.Malloc"]
-	typeFree := p.TypeMap.NameMap["profiler.Free"]
-
-	initEventType(typeExecutionSample, &p.TypeMap.T_EXECUTION_SAMPLE, &p.bindExecutionSample, types2.NewBindExecutionSample, &p.TypeMap)
-	initEventType(typeWallClockSample, &p.TypeMap.T_WALL_CLOCK_SAMPLE, &p.bindWallClockSample, types2.NewBindWallClockSample, &p.TypeMap)
-	initEventType(typeMalloc, &p.TypeMap.T_MALLOC, &p.bindMalloc, types2.NewBindMalloc, &p.TypeMap)
-	initEventType(typeFree, &p.TypeMap.T_FREE, &p.bindFree, types2.NewBindFree, &p.TypeMap)
-	initEventType(typeAllocInNewTLAB, &p.TypeMap.T_ALLOC_IN_NEW_TLAB, &p.bindAllocInNewTLAB, types2.NewBindObjectAllocationInNewTLAB, &p.TypeMap)
-	initEventType(typeALlocOutsideTLAB, &p.TypeMap.T_ALLOC_OUTSIDE_TLAB, &p.bindAllocOutsideTLAB, types2.NewBindObjectAllocationOutsideTLAB, &p.TypeMap)
-	initEventType(typeAllocSample, &p.TypeMap.T_ALLOC_SAMPLE, &p.bindAllocSample, types2.NewBindObjectAllocationSample, &p.TypeMap)
-	initEventType(typeMonitorEnter, &p.TypeMap.T_MONITOR_ENTER, &p.bindMonitorEnter, types2.NewBindJavaMonitorEnter, &p.TypeMap)
-	initEventType(typeThreadPark, &p.TypeMap.T_THREAD_PARK, &p.bindThreadPark, types2.NewBindThreadPark, &p.TypeMap)
-	initEventType(typeLiveObject, &p.TypeMap.T_LIVE_OBJECT, &p.bindLiveObject, types2.NewBindLiveObject, &p.TypeMap)
-	initEventType(typeActiveSetting, &p.TypeMap.T_ACTIVE_SETTING, &p.bindActiveSetting, types2.NewBindActiveSetting, &p.TypeMap)
 
 	p.FrameTypes.Reset()
 	p.ThreadStates.Reset()

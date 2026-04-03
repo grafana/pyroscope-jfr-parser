@@ -26,7 +26,7 @@ func NewBindStackFrame(typ *MetadataClass, typeMap *TypeMap) *BindStackFrame {
 	for i := 0; i < len(typ.Fields); i++ {
 		switch typ.Fields[i].Name {
 		case "method":
-			if typ.Fields[i].Equals(&Field{Name: "method", Type: typeMap.T_METHOD, ConstantPool: true, Array: false}) {
+			if typ.Fields[i].Equals(&Field{Name: "method", Type: typeMap.T_METHOD.TypeID, ConstantPool: true, Array: false}) {
 				res.Fields = append(res.Fields, BindFieldStackFrame{Field: &typ.Fields[i], MethodRef: &res.Temp.Method})
 			} else {
 				res.Fields = append(res.Fields, BindFieldStackFrame{Field: &typ.Fields[i]}) // skip changed field
@@ -109,11 +109,11 @@ func (this *StackFrame) Parse(data []byte, bind *BindStackFrame, typeMap *TypeMa
 					}
 				}
 				switch bind.Fields[bindFieldIndex].Field.Type {
-				case typeMap.T_METHOD:
+				case typeMap.T_METHOD.TypeID:
 					if bind.Fields[bindFieldIndex].MethodRef != nil {
 						*bind.Fields[bindFieldIndex].MethodRef = MethodRef(v64_)
 					}
-				case typeMap.T_FRAME_TYPE:
+				case typeMap.T_FRAME_TYPE.TypeID:
 					if bind.Fields[bindFieldIndex].FrameTypeRef != nil {
 						*bind.Fields[bindFieldIndex].FrameTypeRef = FrameTypeRef(v64_)
 					}
@@ -121,7 +121,7 @@ func (this *StackFrame) Parse(data []byte, bind *BindStackFrame, typeMap *TypeMa
 			} else {
 				bindFieldTypeID := bind.Fields[bindFieldIndex].Field.Type
 				switch bindFieldTypeID {
-				case typeMap.T_STRING:
+				case typeMap.T_STRING.TypeID:
 					s_ = ""
 					if pos >= l {
 						return 0, io.ErrUnexpectedEOF
@@ -341,7 +341,7 @@ func (this *StackFrame) Parse(data []byte, bind *BindStackFrame, typeMap *TypeMa
 										break
 									}
 								}
-							} else if bindSkipFieldType == typeMap.T_STRING {
+							} else if bindSkipFieldType == typeMap.T_STRING.TypeID {
 								s_ = ""
 								if pos >= l {
 									return 0, io.ErrUnexpectedEOF

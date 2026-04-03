@@ -25,13 +25,13 @@ func NewBindClassLoader(typ *MetadataClass, typeMap *TypeMap) *BindClassLoader {
 	for i := 0; i < len(typ.Fields); i++ {
 		switch typ.Fields[i].Name {
 		case "type":
-			if typ.Fields[i].Equals(&Field{Name: "type", Type: typeMap.T_CLASS, ConstantPool: true, Array: false}) {
+			if typ.Fields[i].Equals(&Field{Name: "type", Type: typeMap.T_CLASS.TypeID, ConstantPool: true, Array: false}) {
 				res.Fields = append(res.Fields, BindFieldClassLoader{Field: &typ.Fields[i], ClassRef: &res.Temp.Type})
 			} else {
 				res.Fields = append(res.Fields, BindFieldClassLoader{Field: &typ.Fields[i]}) // skip changed field
 			}
 		case "name":
-			if typ.Fields[i].Equals(&Field{Name: "name", Type: typeMap.T_SYMBOL, ConstantPool: true, Array: false}) {
+			if typ.Fields[i].Equals(&Field{Name: "name", Type: typeMap.T_SYMBOL.TypeID, ConstantPool: true, Array: false}) {
 				res.Fields = append(res.Fields, BindFieldClassLoader{Field: &typ.Fields[i], SymbolRef: &res.Temp.Name})
 			} else {
 				res.Fields = append(res.Fields, BindFieldClassLoader{Field: &typ.Fields[i]}) // skip changed field
@@ -150,11 +150,11 @@ func (this *ClassLoaderList) Parse(data []byte, bind *BindClassLoader, typeMap *
 						}
 					}
 					switch bind.Fields[bindFieldIndex].Field.Type {
-					case typeMap.T_CLASS:
+					case typeMap.T_CLASS.TypeID:
 						if bind.Fields[bindFieldIndex].ClassRef != nil {
 							*bind.Fields[bindFieldIndex].ClassRef = ClassRef(v64_)
 						}
-					case typeMap.T_SYMBOL:
+					case typeMap.T_SYMBOL.TypeID:
 						if bind.Fields[bindFieldIndex].SymbolRef != nil {
 							*bind.Fields[bindFieldIndex].SymbolRef = SymbolRef(v64_)
 						}
@@ -162,7 +162,7 @@ func (this *ClassLoaderList) Parse(data []byte, bind *BindClassLoader, typeMap *
 				} else {
 					bindFieldTypeID := bind.Fields[bindFieldIndex].Field.Type
 					switch bindFieldTypeID {
-					case typeMap.T_STRING:
+					case typeMap.T_STRING.TypeID:
 						s_ = ""
 						if pos >= l {
 							return 0, io.ErrUnexpectedEOF
@@ -380,7 +380,7 @@ func (this *ClassLoaderList) Parse(data []byte, bind *BindClassLoader, typeMap *
 											break
 										}
 									}
-								} else if bindSkipFieldType == typeMap.T_STRING {
+								} else if bindSkipFieldType == typeMap.T_STRING.TypeID {
 									s_ = ""
 									if pos >= l {
 										return 0, io.ErrUnexpectedEOF

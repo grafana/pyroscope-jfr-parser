@@ -24,7 +24,7 @@ func NewBindPackage(typ *MetadataClass, typeMap *TypeMap) *BindPackage {
 	for i := 0; i < len(typ.Fields); i++ {
 		switch typ.Fields[i].Name {
 		case "name":
-			if typ.Fields[i].Equals(&Field{Name: "name", Type: typeMap.T_SYMBOL, ConstantPool: true, Array: false}) {
+			if typ.Fields[i].Equals(&Field{Name: "name", Type: typeMap.T_SYMBOL.TypeID, ConstantPool: true, Array: false}) {
 				res.Fields = append(res.Fields, BindFieldPackage{Field: &typ.Fields[i], SymbolRef: &res.Temp.Name})
 			} else {
 				res.Fields = append(res.Fields, BindFieldPackage{Field: &typ.Fields[i]}) // skip changed field
@@ -142,7 +142,7 @@ func (this *PackageList) Parse(data []byte, bind *BindPackage, typeMap *TypeMap)
 						}
 					}
 					switch bind.Fields[bindFieldIndex].Field.Type {
-					case typeMap.T_SYMBOL:
+					case typeMap.T_SYMBOL.TypeID:
 						if bind.Fields[bindFieldIndex].SymbolRef != nil {
 							*bind.Fields[bindFieldIndex].SymbolRef = SymbolRef(v64_)
 						}
@@ -150,7 +150,7 @@ func (this *PackageList) Parse(data []byte, bind *BindPackage, typeMap *TypeMap)
 				} else {
 					bindFieldTypeID := bind.Fields[bindFieldIndex].Field.Type
 					switch bindFieldTypeID {
-					case typeMap.T_STRING:
+					case typeMap.T_STRING.TypeID:
 						s_ = ""
 						if pos >= l {
 							return 0, io.ErrUnexpectedEOF
@@ -368,7 +368,7 @@ func (this *PackageList) Parse(data []byte, bind *BindPackage, typeMap *TypeMap)
 											break
 										}
 									}
-								} else if bindSkipFieldType == typeMap.T_STRING {
+								} else if bindSkipFieldType == typeMap.T_STRING.TypeID {
 									s_ = ""
 									if pos >= l {
 										return 0, io.ErrUnexpectedEOF

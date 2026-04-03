@@ -80,46 +80,46 @@ func (p *Parser) readConstants(c *types2.MetadataClass) error {
 		p.pos += chunkHeaderSize
 		return nil
 	case "jdk.types.FrameType":
-		o, err := p.FrameTypes.Parse(p.buf[p.pos:], p.bindFrameType, &p.TypeMap)
+		o, err := p.FrameTypes.Parse(p.buf[p.pos:], p.TypeMap.T_FRAME_TYPE.Bind, &p.TypeMap)
 		p.pos += o
 		return err
 	case "jdk.types.ThreadState":
-		o, err := p.ThreadStates.Parse(p.buf[p.pos:], p.bindThreadState, &p.TypeMap)
+		o, err := p.ThreadStates.Parse(p.buf[p.pos:], p.TypeMap.T_THREAD_STATE.Bind, &p.TypeMap)
 		p.pos += o
 		return err
 	case "java.lang.Thread":
-		o, err := p.Threads.Parse(p.buf[p.pos:], p.bindThread, &p.TypeMap)
+		o, err := p.Threads.Parse(p.buf[p.pos:], p.TypeMap.T_THREAD.Bind, &p.TypeMap)
 		p.pos += o
 		return err
 	case "java.lang.Class":
-		o, err := p.Classes.Parse(p.buf[p.pos:], p.bindClass, &p.TypeMap)
+		o, err := p.Classes.Parse(p.buf[p.pos:], p.TypeMap.T_CLASS.Bind, &p.TypeMap)
 		p.pos += o
 		return err
 	case "jdk.types.Method":
-		o, err := p.Methods.Parse(p.buf[p.pos:], p.bindMethod, &p.TypeMap)
+		o, err := p.Methods.Parse(p.buf[p.pos:], p.TypeMap.T_METHOD.Bind, &p.TypeMap)
 		p.pos += o
 		return err
 	case "jdk.types.Package":
-		o, err := p.Packages.Parse(p.buf[p.pos:], p.bindPackage, &p.TypeMap)
+		o, err := p.Packages.Parse(p.buf[p.pos:], p.TypeMap.T_PACKAGE.Bind, &p.TypeMap)
 		p.pos += o
 		return err
 	case "jdk.types.Symbol":
-		o, err := p.Symbols.Parse(p.buf[p.pos:], p.bindSymbol, &p.TypeMap)
+		o, err := p.Symbols.Parse(p.buf[p.pos:], p.TypeMap.T_SYMBOL.Bind, &p.TypeMap)
 		p.pos += o
 		return err
 	case "profiler.types.LogLevel":
-		if p.bindLogLevel == nil {
+		if p.TypeMap.T_LOG_LEVEL.Bind == nil {
 			return fmt.Errorf("no \"profiler.types.LogLevel\"")
 		}
-		o, err := p.LogLevels.Parse(p.buf[p.pos:], p.bindLogLevel, &p.TypeMap)
+		o, err := p.LogLevels.Parse(p.buf[p.pos:], p.TypeMap.T_LOG_LEVEL.Bind, &p.TypeMap)
 		p.pos += o
 		return err
 	case "jdk.types.StackTrace":
-		o, err := p.Stacktrace.Parse(p.buf[p.pos:], p.bindStackTrace, p.bindStackFrame, &p.TypeMap)
+		o, err := p.Stacktrace.Parse(p.buf[p.pos:], p.TypeMap.T_STACK_TRACE.Bind, p.TypeMap.T_STACK_FRAME.Bind, &p.TypeMap)
 		p.pos += o
 		return err
 	case "java.lang.String":
-		o, err := p.Strings.Parse(p.buf[p.pos:], p.bindString, &p.TypeMap)
+		o, err := p.Strings.Parse(p.buf[p.pos:], p.TypeMap.T_STRING.Bind, &p.TypeMap)
 		p.pos += o
 		return err
 	default:

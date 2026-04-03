@@ -39,13 +39,13 @@ func NewBindActiveSetting(typ *MetadataClass, typeMap *TypeMap) *BindActiveSetti
 				res.Fields = append(res.Fields, BindFieldActiveSetting{Field: &typ.Fields[i]}) // skip changed field
 			}
 		case "eventThread":
-			if typ.Fields[i].Equals(&Field{Name: "eventThread", Type: typeMap.T_THREAD, ConstantPool: true, Array: false}) {
+			if typ.Fields[i].Equals(&Field{Name: "eventThread", Type: typeMap.T_THREAD.TypeID, ConstantPool: true, Array: false}) {
 				res.Fields = append(res.Fields, BindFieldActiveSetting{Field: &typ.Fields[i], ThreadRef: &res.Temp.EventThread})
 			} else {
 				res.Fields = append(res.Fields, BindFieldActiveSetting{Field: &typ.Fields[i]}) // skip changed field
 			}
 		case "stackTrace":
-			if typ.Fields[i].Equals(&Field{Name: "stackTrace", Type: typeMap.T_STACK_TRACE, ConstantPool: true, Array: false}) {
+			if typ.Fields[i].Equals(&Field{Name: "stackTrace", Type: typeMap.T_STACK_TRACE.TypeID, ConstantPool: true, Array: false}) {
 				res.Fields = append(res.Fields, BindFieldActiveSetting{Field: &typ.Fields[i], StackTraceRef: &res.Temp.StackTrace})
 			} else {
 				res.Fields = append(res.Fields, BindFieldActiveSetting{Field: &typ.Fields[i]}) // skip changed field
@@ -57,13 +57,13 @@ func NewBindActiveSetting(typ *MetadataClass, typeMap *TypeMap) *BindActiveSetti
 				res.Fields = append(res.Fields, BindFieldActiveSetting{Field: &typ.Fields[i]}) // skip changed field
 			}
 		case "name":
-			if typ.Fields[i].Equals(&Field{Name: "name", Type: typeMap.T_STRING, ConstantPool: false, Array: false}) {
+			if typ.Fields[i].Equals(&Field{Name: "name", Type: typeMap.T_STRING.TypeID, ConstantPool: false, Array: false}) {
 				res.Fields = append(res.Fields, BindFieldActiveSetting{Field: &typ.Fields[i], string: &res.Temp.Name})
 			} else {
 				res.Fields = append(res.Fields, BindFieldActiveSetting{Field: &typ.Fields[i]}) // skip changed field
 			}
 		case "value":
-			if typ.Fields[i].Equals(&Field{Name: "value", Type: typeMap.T_STRING, ConstantPool: false, Array: false}) {
+			if typ.Fields[i].Equals(&Field{Name: "value", Type: typeMap.T_STRING.TypeID, ConstantPool: false, Array: false}) {
 				res.Fields = append(res.Fields, BindFieldActiveSetting{Field: &typ.Fields[i], string: &res.Temp.Value})
 			} else {
 				res.Fields = append(res.Fields, BindFieldActiveSetting{Field: &typ.Fields[i]}) // skip changed field
@@ -139,11 +139,11 @@ func (this *ActiveSetting) Parse(data []byte, bind *BindActiveSetting, typeMap *
 					}
 				}
 				switch bind.Fields[bindFieldIndex].Field.Type {
-				case typeMap.T_THREAD:
+				case typeMap.T_THREAD.TypeID:
 					if bind.Fields[bindFieldIndex].ThreadRef != nil {
 						*bind.Fields[bindFieldIndex].ThreadRef = ThreadRef(v64_)
 					}
-				case typeMap.T_STACK_TRACE:
+				case typeMap.T_STACK_TRACE.TypeID:
 					if bind.Fields[bindFieldIndex].StackTraceRef != nil {
 						*bind.Fields[bindFieldIndex].StackTraceRef = StackTraceRef(v64_)
 					}
@@ -151,7 +151,7 @@ func (this *ActiveSetting) Parse(data []byte, bind *BindActiveSetting, typeMap *
 			} else {
 				bindFieldTypeID := bind.Fields[bindFieldIndex].Field.Type
 				switch bindFieldTypeID {
-				case typeMap.T_STRING:
+				case typeMap.T_STRING.TypeID:
 					s_ = ""
 					if pos >= l {
 						return 0, io.ErrUnexpectedEOF
@@ -373,7 +373,7 @@ func (this *ActiveSetting) Parse(data []byte, bind *BindActiveSetting, typeMap *
 										break
 									}
 								}
-							} else if bindSkipFieldType == typeMap.T_STRING {
+							} else if bindSkipFieldType == typeMap.T_STRING.TypeID {
 								s_ = ""
 								if pos >= l {
 									return 0, io.ErrUnexpectedEOF

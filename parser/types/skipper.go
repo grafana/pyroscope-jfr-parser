@@ -126,7 +126,7 @@ func (this *SkipConstantPoolList) Parse(data []byte, bind *BindSkipConstantPool,
 				} else {
 					bindFieldTypeID := bind.Fields[bindFieldIndex].Field.Type
 					switch bindFieldTypeID {
-					case typeMap.T_STRING:
+					case typeMap.T_STRING.TypeID:
 						s_ = ""
 						if pos >= l {
 							return 0, io.ErrUnexpectedEOF
@@ -344,7 +344,7 @@ func (this *SkipConstantPoolList) Parse(data []byte, bind *BindSkipConstantPool,
 											break
 										}
 									}
-								} else if bindSkipFieldType == typeMap.T_STRING {
+								} else if bindSkipFieldType == typeMap.T_STRING.TypeID {
 									s_ = ""
 									if pos >= l {
 										return 0, io.ErrUnexpectedEOF

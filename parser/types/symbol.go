@@ -24,7 +24,7 @@ func NewBindSymbol(typ *MetadataClass, typeMap *TypeMap) *BindSymbol {
 	for i := 0; i < len(typ.Fields); i++ {
 		switch typ.Fields[i].Name {
 		case "string":
-			if typ.Fields[i].Equals(&Field{Name: "string", Type: typeMap.T_STRING, ConstantPool: false, Array: false}) {
+			if typ.Fields[i].Equals(&Field{Name: "string", Type: typeMap.T_STRING.TypeID, ConstantPool: false, Array: false}) {
 				res.Fields = append(res.Fields, BindFieldSymbol{Field: &typ.Fields[i], string: &res.Temp.String})
 			} else {
 				res.Fields = append(res.Fields, BindFieldSymbol{Field: &typ.Fields[i]}) // skip changed field
@@ -144,7 +144,7 @@ func (this *SymbolList) Parse(data []byte, bind *BindSymbol, typeMap *TypeMap) (
 				} else {
 					bindFieldTypeID := bind.Fields[bindFieldIndex].Field.Type
 					switch bindFieldTypeID {
-					case typeMap.T_STRING:
+					case typeMap.T_STRING.TypeID:
 						s_ = ""
 						if pos >= l {
 							return 0, io.ErrUnexpectedEOF
@@ -364,7 +364,7 @@ func (this *SymbolList) Parse(data []byte, bind *BindSymbol, typeMap *TypeMap) (
 											break
 										}
 									}
-								} else if bindSkipFieldType == typeMap.T_STRING {
+								} else if bindSkipFieldType == typeMap.T_STRING.TypeID {
 									s_ = ""
 									if pos >= l {
 										return 0, io.ErrUnexpectedEOF

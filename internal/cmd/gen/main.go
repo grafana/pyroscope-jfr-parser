@@ -275,7 +275,7 @@ func generateBindLoop(typ *types.MetadataClass, bindName string, nestedAllowed b
 	res += emitReadI32()
 	res += fmt.Sprintf("		%sArraySize = int(v32_)\n", bindName)
 	if len(complexFields) > 0 {
-		res += fmt.Sprintf("		if %s.Fields[%sFieldIndex].Field.Type == typeMap.%s {\n", bindName, bindName, TypeID2Sym(complexFields[0].Type))
+		res += fmt.Sprintf("		if %s.Fields[%sFieldIndex].Field.Type == typeMap.%s {\n", bindName, bindName, typeMapAccessor(complexFields[0].Type))
 		res += fmt.Sprintf("			*%s.Fields[%sFieldIndex].%s = make([]%s, 0, %sArraySize)\n",
 			bindName, bindName, name(TypeForCPoolID(complexFields[0].Type)), name(TypeForCPoolID(complexFields[0].Type)), bindName)
 		res += fmt.Sprintf("		}\n")
@@ -287,7 +287,7 @@ func generateBindLoop(typ *types.MetadataClass, bindName string, nestedAllowed b
 	if len(cpoolFields) > 0 {
 		res += fmt.Sprintf("		switch %s.Fields[%sFieldIndex].Field.Type {\n", bindName, bindName)
 		for _, field := range cpoolFields {
-			res += fmt.Sprintf("		case typeMap.%s:\n", TypeID2Sym(field.Type))
+			res += fmt.Sprintf("		case typeMap.%s:\n", typeMapAccessor(field.Type))
 			res += fmt.Sprintf("			if %s.Fields[%sFieldIndex].%s != nil {\n", bindName, bindName, goTypeName(field))
 			res += fmt.Sprintf("				*%s.Fields[%sFieldIndex].%s = %s(v64_)\n", bindName, bindName, goTypeName(field), goTypeName(field))
 			res += fmt.Sprintf("			}\n")
@@ -298,7 +298,7 @@ func generateBindLoop(typ *types.MetadataClass, bindName string, nestedAllowed b
 	res += fmt.Sprintf("		%sFieldTypeID := %s.Fields[%sFieldIndex].Field.Type\n", bindName, bindName, bindName)
 
 	res += fmt.Sprintf("		switch %sFieldTypeID {\n", bindName)
-	res += fmt.Sprintf("		case  typeMap.T_STRING:\n")
+	res += fmt.Sprintf("		case  typeMap.T_STRING.TypeID:\n")
 	res += emitString()
 	if fieldsHas(fs, T_STRING) {
 		res += fmt.Sprintf("			if %s.Fields[%sFieldIndex].string != nil {\n", bindName, bindName)
@@ -357,7 +357,7 @@ func generateBindLoop(typ *types.MetadataClass, bindName string, nestedAllowed b
 	if nestedAllowed {
 		for _, field := range complexFields {
 			nestedType := TypeForCPoolID(field.Type)
-			res += fmt.Sprintf("		case typeMap.%s:\n", TypeID2Sym(field.Type))
+			res += fmt.Sprintf("		case typeMap.%s:\n", typeMapAccessor(field.Type))
 			res += generateBindLoop(nestedType, "bind"+name(nestedType), false)
 			if field.Array {
 				res += fmt.Sprintf("			if %s.Fields[%sFieldIndex].%s != nil {\n", bindName, bindName, name(nestedType))
@@ -384,7 +384,7 @@ func generateBindLoop(typ *types.MetadataClass, bindName string, nestedAllowed b
 	res += fmt.Sprintf("					%sSkipFieldType :=  %sFieldType.Fields[%sskipFieldIndex].Type\n", bindName, bindName, bindName)
 	res += fmt.Sprintf("					if %sFieldType.Fields[%sskipFieldIndex].ConstantPool {\n", bindName, bindName)
 	res += emitReadI32()
-	res += fmt.Sprintf("					} else if %sSkipFieldType == typeMap.T_STRING{\n", bindName)
+	res += fmt.Sprintf("					} else if %sSkipFieldType == typeMap.T_STRING.TypeID{\n", bindName)
 	res += emitString()
 	res += fmt.Sprintf("					} else if %sSkipFieldType == typeMap.T_INT {\n", bindName)
 	res += emitReadI32()
@@ -500,7 +500,7 @@ func generateBinding(typ *types.MetadataClass, opt options) string {
 		if slices.Contains(opt.skipFields, typ.Fields[i].Name) {
 			res += fmt.Sprintf("			res.Fields = append(res.Fields, %s{Field: &typ.Fields[i]}) // skip to save mem\n", bindFieldName(typ))
 		} else {
-			res += fmt.Sprintf("			if typ.Fields[i].Equals(&Field{Name: \"%s\", Type: typeMap.%s, ConstantPool: %v, Array: %v}) {\n", typ.Fields[i].Name, TypeID2Sym(typ.Fields[i].Type), typ.Fields[i].ConstantPool, typ.Fields[i].Array)
+			res += fmt.Sprintf("			if typ.Fields[i].Equals(&Field{Name: \"%s\", Type: typeMap.%s, ConstantPool: %v, Array: %v}) {\n", typ.Fields[i].Name, typeMapAccessor(typ.Fields[i].Type), typ.Fields[i].ConstantPool, typ.Fields[i].Array)
 			res += fmt.Sprintf("				res.Fields = append(res.Fields, %s{Field: &typ.Fields[i], %s: &res.Temp.%s}) \n", bindFieldName(typ), goTypeName(typ.Fields[i]), capitalize(typ.Fields[i].Name))
 			res += fmt.Sprintf("			} else {\n")
 			res += fmt.Sprintf("				res.Fields = append(res.Fields, %s{Field: &typ.Fields[i]}) // skip changed field\n", bindFieldName(typ))
@@ -687,4 +687,18 @@ func listName(typ *types.MetadataClass) string {
 
 func capitalize(s string) string {
 	return strings.ToUpper(s[:1]) + s[1:]
+}
+
+// typeMapAccessor returns the TypeMap field accessor for a given TypeID.
+// Primitives (T_STRING, T_INT, etc.) are plain TypeID fields.
+// Non-primitives (T_CLASS, T_THREAD, etc.) are TypeBinding fields,
+// so we need ".TypeID" to access the underlying TypeID value.
+func typeMapAccessor(id types.TypeID) string {
+	sym := TypeID2Sym(id)
+	switch id {
+	case T_INT, T_LONG, T_SHORT, T_FLOAT, T_BOOLEAN:
+		return sym
+	default:
+		return sym + ".TypeID"
+	}
 }

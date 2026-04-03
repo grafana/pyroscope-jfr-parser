@@ -31,7 +31,7 @@ func NewBindStackTrace(typ *MetadataClass, typeMap *TypeMap) *BindStackTrace {
 				res.Fields = append(res.Fields, BindFieldStackTrace{Field: &typ.Fields[i]}) // skip changed field
 			}
 		case "frames":
-			if typ.Fields[i].Equals(&Field{Name: "frames", Type: typeMap.T_STACK_FRAME, ConstantPool: false, Array: true}) {
+			if typ.Fields[i].Equals(&Field{Name: "frames", Type: typeMap.T_STACK_FRAME.TypeID, ConstantPool: false, Array: true}) {
 				res.Fields = append(res.Fields, BindFieldStackTrace{Field: &typ.Fields[i], StackFrame: &res.Temp.Frames})
 			} else {
 				res.Fields = append(res.Fields, BindFieldStackTrace{Field: &typ.Fields[i]}) // skip changed field
@@ -129,7 +129,7 @@ func (this *StackTraceList) Parse(data []byte, bind *BindStackTrace, bindStackFr
 					}
 				}
 				bindArraySize = int(v32_)
-				if bind.Fields[bindFieldIndex].Field.Type == typeMap.T_STACK_FRAME {
+				if bind.Fields[bindFieldIndex].Field.Type == typeMap.T_STACK_FRAME.TypeID {
 					*bind.Fields[bindFieldIndex].StackFrame = make([]StackFrame, 0, bindArraySize)
 				}
 			}
@@ -155,7 +155,7 @@ func (this *StackTraceList) Parse(data []byte, bind *BindStackTrace, bindStackFr
 				} else {
 					bindFieldTypeID := bind.Fields[bindFieldIndex].Field.Type
 					switch bindFieldTypeID {
-					case typeMap.T_STRING:
+					case typeMap.T_STRING.TypeID:
 						s_ = ""
 						if pos >= l {
 							return 0, io.ErrUnexpectedEOF
@@ -332,7 +332,7 @@ func (this *StackTraceList) Parse(data []byte, bind *BindStackTrace, bindStackFr
 							}
 						}
 						// skipping
-					case typeMap.T_STACK_FRAME:
+					case typeMap.T_STACK_FRAME.TypeID:
 						for bindStackFrameFieldIndex := 0; bindStackFrameFieldIndex < len(bindStackFrame.Fields); bindStackFrameFieldIndex++ {
 							bindStackFrameArraySize := 1
 							if bindStackFrame.Fields[bindStackFrameFieldIndex].Field.Array {
@@ -373,11 +373,11 @@ func (this *StackTraceList) Parse(data []byte, bind *BindStackTrace, bindStackFr
 										}
 									}
 									switch bindStackFrame.Fields[bindStackFrameFieldIndex].Field.Type {
-									case typeMap.T_METHOD:
+									case typeMap.T_METHOD.TypeID:
 										if bindStackFrame.Fields[bindStackFrameFieldIndex].MethodRef != nil {
 											*bindStackFrame.Fields[bindStackFrameFieldIndex].MethodRef = MethodRef(v64_)
 										}
-									case typeMap.T_FRAME_TYPE:
+									case typeMap.T_FRAME_TYPE.TypeID:
 										if bindStackFrame.Fields[bindStackFrameFieldIndex].FrameTypeRef != nil {
 											*bindStackFrame.Fields[bindStackFrameFieldIndex].FrameTypeRef = FrameTypeRef(v64_)
 										}
@@ -385,7 +385,7 @@ func (this *StackTraceList) Parse(data []byte, bind *BindStackTrace, bindStackFr
 								} else {
 									bindStackFrameFieldTypeID := bindStackFrame.Fields[bindStackFrameFieldIndex].Field.Type
 									switch bindStackFrameFieldTypeID {
-									case typeMap.T_STRING:
+									case typeMap.T_STRING.TypeID:
 										s_ = ""
 										if pos >= l {
 											return 0, io.ErrUnexpectedEOF
@@ -605,7 +605,7 @@ func (this *StackTraceList) Parse(data []byte, bind *BindStackTrace, bindStackFr
 															break
 														}
 													}
-												} else if bindStackFrameSkipFieldType == typeMap.T_STRING {
+												} else if bindStackFrameSkipFieldType == typeMap.T_STRING.TypeID {
 													s_ = ""
 													if pos >= l {
 														return 0, io.ErrUnexpectedEOF
@@ -829,7 +829,7 @@ func (this *StackTraceList) Parse(data []byte, bind *BindStackTrace, bindStackFr
 											break
 										}
 									}
-								} else if bindSkipFieldType == typeMap.T_STRING {
+								} else if bindSkipFieldType == typeMap.T_STRING.TypeID {
 									s_ = ""
 									if pos >= l {
 										return 0, io.ErrUnexpectedEOF
