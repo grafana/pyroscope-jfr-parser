@@ -5,7 +5,6 @@ package main
 // #include <stdint.h>
 import "C"
 import (
-	"github.com/grafana/jfr-parser/internal/cmd/fuzz/seedcorpus"
 	"github.com/grafana/jfr-parser/pprof"
 	"unsafe"
 )
@@ -22,21 +21,8 @@ func LLVMFuzzerTestOneInput(data *C.char, size C.size_t) C.int {
 		return 0
 	}
 
-	fi := seedcorpus.DecodeFuzzInput(gdata)
-
-	var ls *pprof.LabelsSnapshot
-	if len(fi.Labels) > 0 {
-		ls = &pprof.LabelsSnapshot{}
-		_ = ls.UnmarshalVT(fi.Labels)
-	}
-
-	pi := &pprof.ParseInput{
-		StartTime:  fi.StartTime,
-		EndTime:    fi.EndTime,
-		SampleRate: fi.SampleRate,
-	}
-
-	_, _ = pprof.ParseJFR(fi.JFR, pi, ls, pprof.WithTruncatedFrame(fi.TruncatedFrame), pprof.WithDisablePanicRecovery(true))
+	fi := decodeFuzzInput(gdata)
+	_, _ = pprof.ParseJFR(fi.jfr, fi.parseInput, fi.labels, pprof.WithTruncatedFrame(fi.truncatedFrame), pprof.WithDisablePanicRecovery(true))
 	return 0
 }
 
