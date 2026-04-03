@@ -104,6 +104,17 @@ func NewParser(buf []byte, options Options) *Parser {
 	return p
 }
 
+func parseEvent[P interface{ Parse([]byte, *B, *def.TypeMap) (int, error) }, B any](
+	p *Parser, ttyp def.TypeID, parser P, bind *B, pp int, size uint64,
+) (def.TypeID, error) {
+	_, err := parser.Parse(p.buf[p.pos:], bind, &p.TypeMap)
+	if err != nil {
+		return 0, err
+	}
+	p.pos = pp + int(size)
+	return ttyp, nil
+}
+
 func (p *Parser) ParseEvent() (def.TypeID, error) {
 	for {
 		if p.pos == p.chunkEnd {
@@ -134,128 +145,28 @@ func (p *Parser) ParseEvent() (def.TypeID, error) {
 		ttyp := def.TypeID(typ)
 		switch ttyp {
 		case p.TypeMap.T_EXECUTION_SAMPLE:
-			if p.bindExecutionSample == nil {
-				p.pos = pp + int(size) // skip
-				continue
-			}
-			_, err := p.ExecutionSample.Parse(p.buf[p.pos:], p.bindExecutionSample, &p.TypeMap)
-			if err != nil {
-				return 0, err
-			}
-			p.pos = pp + int(size)
-			return ttyp, nil
+			return parseEvent(p, ttyp, &p.ExecutionSample, p.bindExecutionSample, pp, size)
 		case p.TypeMap.T_WALL_CLOCK_SAMPLE:
-			if p.bindWallClockSample == nil {
-				p.pos = pp + int(size) // skip
-				continue
-			}
-			_, err := p.WallClockSample.Parse(p.buf[p.pos:], p.bindWallClockSample, &p.TypeMap)
-			if err != nil {
-				return 0, err
-			}
-			p.pos = pp + int(size)
-			return ttyp, nil
+			return parseEvent(p, ttyp, &p.WallClockSample, p.bindWallClockSample, pp, size)
 		case p.TypeMap.T_MALLOC:
-			if p.bindMalloc == nil {
-				p.pos = pp + int(size) // skip
-				continue
-			}
-			_, err := p.Malloc.Parse(p.buf[p.pos:], p.bindMalloc, &p.TypeMap)
-			if err != nil {
-				return 0, err
-			}
-			p.pos = pp + int(size)
-			return ttyp, nil
+			return parseEvent(p, ttyp, &p.Malloc, p.bindMalloc, pp, size)
 		case p.TypeMap.T_FREE:
-			if p.bindFree == nil {
-				p.pos = pp + int(size) // skip
-				continue
-			}
-			_, err := p.Free.Parse(p.buf[p.pos:], p.bindFree, &p.TypeMap)
-			if err != nil {
-				return 0, err
-			}
-			p.pos = pp + int(size)
-			return ttyp, nil
+			return parseEvent(p, ttyp, &p.Free, p.bindFree, pp, size)
 		case p.TypeMap.T_ALLOC_IN_NEW_TLAB:
-			if p.bindAllocInNewTLAB == nil {
-				p.pos = pp + int(size) // skip
-				continue
-			}
-			_, err := p.ObjectAllocationInNewTLAB.Parse(p.buf[p.pos:], p.bindAllocInNewTLAB, &p.TypeMap)
-			if err != nil {
-				return 0, err
-			}
-			p.pos = pp + int(size)
-			return ttyp, nil
+			return parseEvent(p, ttyp, &p.ObjectAllocationInNewTLAB, p.bindAllocInNewTLAB, pp, size)
 		case p.TypeMap.T_ALLOC_OUTSIDE_TLAB:
-			if p.bindAllocOutsideTLAB == nil {
-				p.pos = pp + int(size) // skip
-				continue
-			}
-			_, err := p.ObjectAllocationOutsideTLAB.Parse(p.buf[p.pos:], p.bindAllocOutsideTLAB, &p.TypeMap)
-			if err != nil {
-				return 0, err
-			}
-			p.pos = pp + int(size)
-			return ttyp, nil
+			return parseEvent(p, ttyp, &p.ObjectAllocationOutsideTLAB, p.bindAllocOutsideTLAB, pp, size)
 		case p.TypeMap.T_ALLOC_SAMPLE:
-			if p.bindAllocSample == nil {
-				p.pos = pp + int(size) // skip
-			}
-			_, err := p.ObjectAllocationSample.Parse(p.buf[p.pos:], p.bindAllocSample, &p.TypeMap)
-			if err != nil {
-				return 0, err
-			}
-			p.pos = pp + int(size)
-			return ttyp, nil
+			return parseEvent(p, ttyp, &p.ObjectAllocationSample, p.bindAllocSample, pp, size)
 		case p.TypeMap.T_LIVE_OBJECT:
-			if p.bindLiveObject == nil {
-				p.pos = pp + int(size) // skip
-				continue
-			}
-			_, err := p.LiveObject.Parse(p.buf[p.pos:], p.bindLiveObject, &p.TypeMap)
-			if err != nil {
-				return 0, err
-			}
-			p.pos = pp + int(size)
-			return ttyp, nil
+			return parseEvent(p, ttyp, &p.LiveObject, p.bindLiveObject, pp, size)
 		case p.TypeMap.T_MONITOR_ENTER:
-			if p.bindMonitorEnter == nil {
-				p.pos = pp + int(size) // skip
-				continue
-			}
-			_, err := p.JavaMonitorEnter.Parse(p.buf[p.pos:], p.bindMonitorEnter, &p.TypeMap)
-			if err != nil {
-				return 0, err
-			}
-			p.pos = pp + int(size)
-			return ttyp, nil
+			return parseEvent(p, ttyp, &p.JavaMonitorEnter, p.bindMonitorEnter, pp, size)
 		case p.TypeMap.T_THREAD_PARK:
-			if p.bindThreadPark == nil {
-				p.pos = pp + int(size) // skip
-				continue
-			}
-			_, err := p.ThreadPark.Parse(p.buf[p.pos:], p.bindThreadPark, &p.TypeMap)
-			if err != nil {
-				return 0, err
-			}
-			p.pos = pp + int(size)
-			return ttyp, nil
-
+			return parseEvent(p, ttyp, &p.ThreadPark, p.bindThreadPark, pp, size)
 		case p.TypeMap.T_ACTIVE_SETTING:
-			if p.bindActiveSetting == nil {
-				p.pos = pp + int(size) // skip
-				continue
-			}
-			_, err := p.ActiveSetting.Parse(p.buf[p.pos:], p.bindActiveSetting, &p.TypeMap)
-			if err != nil {
-				return 0, err
-			}
-			p.pos = pp + int(size)
-			return ttyp, nil
+			return parseEvent(p, ttyp, &p.ActiveSetting, p.bindActiveSetting, pp, size)
 		default:
-			//fmt.Printf("skipping %s %v\n", def.TypeID2Sym(ttyp), ttyp)
 			p.pos = pp + int(size)
 		}
 	}
@@ -533,7 +444,7 @@ func (p *Parser) checkTypes() error {
 	if typeCPLogLevel != nil {
 		p.TypeMap.T_LOG_LEVEL = typeCPLogLevel.ID
 	} else {
-		p.TypeMap.T_LOG_LEVEL = -1
+		p.TypeMap.T_LOG_LEVEL = def.UnsetTypeID
 	}
 	p.TypeMap.T_STACK_TRACE = typeCPStackTrace.ID
 	p.TypeMap.T_CLASS_LOADER = typeCPClassLoader.ID
@@ -575,86 +486,119 @@ func (p *Parser) checkTypes() error {
 	typeFree := p.TypeMap.NameMap["profiler.Free"]
 
 	if typeExecutionSample != nil {
+		if typeExecutionSample.ID == def.UnsetTypeID {
+			return fmt.Errorf("invalid type ID for %s", typeExecutionSample.Name)
+		}
 		p.TypeMap.T_EXECUTION_SAMPLE = typeExecutionSample.ID
 		p.bindExecutionSample = types2.NewBindExecutionSample(typeExecutionSample, &p.TypeMap)
 	} else {
-		p.TypeMap.T_EXECUTION_SAMPLE = -1
+		p.TypeMap.T_EXECUTION_SAMPLE = def.UnsetTypeID
 		p.bindExecutionSample = nil
 	}
 	if typeWallClockSample != nil {
+		if typeWallClockSample.ID == def.UnsetTypeID {
+			return fmt.Errorf("invalid type ID for %s", typeWallClockSample.Name)
+		}
 		p.TypeMap.T_WALL_CLOCK_SAMPLE = typeWallClockSample.ID
 		p.bindWallClockSample = types2.NewBindWallClockSample(typeWallClockSample, &p.TypeMap)
 	} else {
-		p.TypeMap.T_WALL_CLOCK_SAMPLE = -1
+		p.TypeMap.T_WALL_CLOCK_SAMPLE = def.UnsetTypeID
 		p.bindWallClockSample = nil
 	}
 	if typeMalloc != nil {
+		if typeMalloc.ID == def.UnsetTypeID {
+			return fmt.Errorf("invalid type ID for %s", typeMalloc.Name)
+		}
 		p.TypeMap.T_MALLOC = typeMalloc.ID
 		p.bindMalloc = types2.NewBindMalloc(typeMalloc, &p.TypeMap)
 	} else {
-		p.TypeMap.T_MALLOC = -1
+		p.TypeMap.T_MALLOC = def.UnsetTypeID
 		p.bindMalloc = nil
 	}
 
 	if typeFree != nil {
+		if typeFree.ID == def.UnsetTypeID {
+			return fmt.Errorf("invalid type ID for %s", typeFree.Name)
+		}
 		p.TypeMap.T_FREE = typeFree.ID
 		p.bindFree = types2.NewBindFree(typeFree, &p.TypeMap)
 	} else {
-		p.TypeMap.T_FREE = -1
+		p.TypeMap.T_FREE = def.UnsetTypeID
 		p.bindFree = nil
 	}
 
 	if typeAllocInNewTLAB != nil {
+		if typeAllocInNewTLAB.ID == def.UnsetTypeID {
+			return fmt.Errorf("invalid type ID for %s", typeAllocInNewTLAB.Name)
+		}
 		p.TypeMap.T_ALLOC_IN_NEW_TLAB = typeAllocInNewTLAB.ID
 		p.bindAllocInNewTLAB = types2.NewBindObjectAllocationInNewTLAB(typeAllocInNewTLAB, &p.TypeMap)
 	} else {
-		p.TypeMap.T_ALLOC_IN_NEW_TLAB = -1
+		p.TypeMap.T_ALLOC_IN_NEW_TLAB = def.UnsetTypeID
 		p.bindAllocInNewTLAB = nil
 	}
 
 	if typeALlocOutsideTLAB != nil {
+		if typeALlocOutsideTLAB.ID == def.UnsetTypeID {
+			return fmt.Errorf("invalid type ID for %s", typeALlocOutsideTLAB.Name)
+		}
 		p.TypeMap.T_ALLOC_OUTSIDE_TLAB = typeALlocOutsideTLAB.ID
 		p.bindAllocOutsideTLAB = types2.NewBindObjectAllocationOutsideTLAB(typeALlocOutsideTLAB, &p.TypeMap)
 	} else {
-		p.TypeMap.T_ALLOC_OUTSIDE_TLAB = -1
+		p.TypeMap.T_ALLOC_OUTSIDE_TLAB = def.UnsetTypeID
 		p.bindAllocOutsideTLAB = nil
 	}
 	if typeAllocSample != nil {
+		if typeAllocSample.ID == def.UnsetTypeID {
+			return fmt.Errorf("invalid type ID for %s", typeAllocSample.Name)
+		}
 		p.TypeMap.T_ALLOC_SAMPLE = typeAllocSample.ID
 		p.bindAllocSample = types2.NewBindObjectAllocationSample(typeAllocSample, &p.TypeMap)
 	} else {
-		p.TypeMap.T_ALLOC_SAMPLE = -1
+		p.TypeMap.T_ALLOC_SAMPLE = def.UnsetTypeID
 		p.bindAllocSample = nil
 	}
 	if typeMonitorEnter != nil {
+		if typeMonitorEnter.ID == def.UnsetTypeID {
+			return fmt.Errorf("invalid type ID for %s", typeMonitorEnter.Name)
+		}
 		p.TypeMap.T_MONITOR_ENTER = typeMonitorEnter.ID
 		p.bindMonitorEnter = types2.NewBindJavaMonitorEnter(typeMonitorEnter, &p.TypeMap)
 	} else {
-		p.TypeMap.T_MONITOR_ENTER = -1
+		p.TypeMap.T_MONITOR_ENTER = def.UnsetTypeID
 		p.bindMonitorEnter = nil
 	}
 
 	if typeThreadPark != nil {
+		if typeThreadPark.ID == def.UnsetTypeID {
+			return fmt.Errorf("invalid type ID for %s", typeThreadPark.Name)
+		}
 		p.TypeMap.T_THREAD_PARK = typeThreadPark.ID
 		p.bindThreadPark = types2.NewBindThreadPark(typeThreadPark, &p.TypeMap)
 	} else {
-		p.TypeMap.T_THREAD_PARK = -1
+		p.TypeMap.T_THREAD_PARK = def.UnsetTypeID
 		p.bindThreadPark = nil
 	}
 
 	if typeLiveObject != nil {
+		if typeLiveObject.ID == def.UnsetTypeID {
+			return fmt.Errorf("invalid type ID for %s", typeLiveObject.Name)
+		}
 		p.TypeMap.T_LIVE_OBJECT = typeLiveObject.ID
 		p.bindLiveObject = types2.NewBindLiveObject(typeLiveObject, &p.TypeMap)
 	} else {
-		p.TypeMap.T_LIVE_OBJECT = -1
+		p.TypeMap.T_LIVE_OBJECT = def.UnsetTypeID
 		p.bindLiveObject = nil
 	}
 
 	if typeActiveSetting != nil {
+		if typeActiveSetting.ID == def.UnsetTypeID {
+			return fmt.Errorf("invalid type ID for %s", typeActiveSetting.Name)
+		}
 		p.TypeMap.T_ACTIVE_SETTING = typeActiveSetting.ID
 		p.bindActiveSetting = types2.NewBindActiveSetting(typeActiveSetting, &p.TypeMap)
 	} else {
-		p.TypeMap.T_ACTIVE_SETTING = -1
+		p.TypeMap.T_ACTIVE_SETTING = def.UnsetTypeID
 		p.bindActiveSetting = nil
 	}
 
