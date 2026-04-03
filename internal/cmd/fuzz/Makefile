@@ -33,7 +33,7 @@ fuzz: go-fuzz.a
 
 .PHONY: corpus
 corpus:
-	bash fuzz-corpus.sh
+	go run ./seedcorpus/cmd
 
 clean:
 	$(RM) go-fuzz.a go-fuzz.h
