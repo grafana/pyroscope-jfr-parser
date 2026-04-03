@@ -8,7 +8,6 @@ import (
 	"unsafe"
 
 	"github.com/grafana/jfr-parser/internal/corpus"
-	"github.com/grafana/jfr-parser/pprof"
 )
 
 //export LLVMFuzzerInitialize
@@ -22,9 +21,7 @@ func LLVMFuzzerTestOneInput(data *C.char, size C.size_t) C.int {
 	if len(gdata) == 0 {
 		return 0
 	}
-
-	fi := corpus.Decode(gdata)
-	_, _ = pprof.ParseJFR(fi.JFR, fi.ParseInput, fi.Labels, pprof.WithTruncatedFrame(fi.TruncatedFrame), pprof.WithDisablePanicRecovery(true))
+	_, _ = corpus.ParseOne(gdata)
 	return 0
 }
 

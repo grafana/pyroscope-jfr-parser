@@ -49,6 +49,12 @@ func Decode(data []byte) Input {
 	}
 }
 
+// ParseOne decodes the fuzz input and runs ParseJFR with panic recovery disabled.
+func ParseOne(data []byte) (*pprof.Profiles, error) {
+	fi := Decode(data)
+	return pprof.ParseJFR(fi.JFR, fi.ParseInput, fi.Labels, pprof.WithTruncatedFrame(fi.TruncatedFrame), pprof.WithDisablePanicRecovery(true))
+}
+
 // Encode wraps raw JFR bytes and optional labels into the binary format
 // expected by the fuzzer.
 func Encode(jfrData []byte, labels []byte) []byte {
