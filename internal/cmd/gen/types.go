@@ -7,57 +7,57 @@ import (
 )
 
 const (
-	T_METADATA                types.TypeID = 0
-	T_CPOOL                   types.TypeID = 1
-	T_BOOLEAN                 types.TypeID = 4
-	T_CHAR                    types.TypeID = 5
-	T_FLOAT                   types.TypeID = 6
-	T_DOUBLE                  types.TypeID = 7
-	T_BYTE                    types.TypeID = 8
-	T_SHORT                   types.TypeID = 9
-	T_INT                     types.TypeID = 10
-	T_LONG                    types.TypeID = 11
-	T_STRING                  types.TypeID = 20
-	T_CLASS                   types.TypeID = 21
-	T_THREAD                  types.TypeID = 22
-	T_CLASS_LOADER            types.TypeID = 23
-	T_FRAME_TYPE              types.TypeID = 24
-	T_THREAD_STATE            types.TypeID = 25
-	T_STACK_TRACE             types.TypeID = 26
-	T_STACK_FRAME             types.TypeID = 27
-	T_METHOD                  types.TypeID = 28
-	T_PACKAGE                 types.TypeID = 29
-	T_SYMBOL                  types.TypeID = 30
-	T_LOG_LEVEL               types.TypeID = 31
-	T_EVENT                   types.TypeID = 100
-	T_EXECUTION_SAMPLE        types.TypeID = 101
-	T_ALLOC_IN_NEW_TLAB       types.TypeID = 102
-	T_ALLOC_OUTSIDE_TLAB      types.TypeID = 103
-	T_MONITOR_ENTER           types.TypeID = 104
-	T_THREAD_PARK             types.TypeID = 105
-	T_CPU_LOAD                types.TypeID = 106
-	T_ACTIVE_RECORDING        types.TypeID = 107
-	T_ACTIVE_SETTING          types.TypeID = 108
-	T_OS_INFORMATION          types.TypeID = 109
-	T_CPU_INFORMATION         types.TypeID = 110
-	T_JVM_INFORMATION         types.TypeID = 111
-	T_INITIAL_SYSTEM_PROPERTY types.TypeID = 112
-	T_NATIVE_LIBRARY          types.TypeID = 113
-	T_LOG                     types.TypeID = 114
-	T_LIVE_OBJECT             types.TypeID = 115
-	T_WALL_CLOCK_SAMPLE       types.TypeID = 118
-	T_MALLOC                  types.TypeID = 119
-	T_FREE                    types.TypeID = 120
-	T_ANNOTATION              types.TypeID = 200
-	T_LABEL                   types.TypeID = 201
-	T_CATEGORY                types.TypeID = 202
-	T_TIMESTAMP               types.TypeID = 203
-	T_TIMESPAN                types.TypeID = 204
-	T_DATA_AMOUNT             types.TypeID = 205
-	T_MEMORY_ADDRESS          types.TypeID = 206
-	T_UNSIGNED                types.TypeID = 207
-	T_PERCENTAGE              types.TypeID = 208
-	T_ALLOC_SAMPLE            types.TypeID = 209
+	T_METADATA types.TypeID = iota
+	T_CPOOL
+	T_BOOLEAN
+	T_CHAR
+	T_FLOAT
+	T_DOUBLE
+	T_BYTE
+	T_SHORT
+	T_INT
+	T_LONG
+	T_STRING
+	T_CLASS
+	T_THREAD
+	T_CLASS_LOADER
+	T_FRAME_TYPE
+	T_THREAD_STATE
+	T_STACK_TRACE
+	T_STACK_FRAME
+	T_METHOD
+	T_PACKAGE
+	T_SYMBOL
+	T_LOG_LEVEL
+	T_EVENT
+	T_EXECUTION_SAMPLE
+	T_ALLOC_IN_NEW_TLAB
+	T_ALLOC_OUTSIDE_TLAB
+	T_MONITOR_ENTER
+	T_THREAD_PARK
+	T_CPU_LOAD
+	T_ACTIVE_RECORDING
+	T_ACTIVE_SETTING
+	T_OS_INFORMATION
+	T_CPU_INFORMATION
+	T_JVM_INFORMATION
+	T_INITIAL_SYSTEM_PROPERTY
+	T_NATIVE_LIBRARY
+	T_LOG
+	T_LIVE_OBJECT
+	T_WALL_CLOCK_SAMPLE
+	T_MALLOC
+	T_FREE
+	T_ANNOTATION
+	T_LABEL
+	T_CATEGORY
+	T_TIMESTAMP
+	T_TIMESPAN
+	T_DATA_AMOUNT
+	T_MEMORY_ADDRESS
+	T_UNSIGNED
+	T_PERCENTAGE
+	T_ALLOC_SAMPLE
 )
 
 func TypeID2Sym(id types.TypeID) string {
