@@ -73,6 +73,9 @@ func (p *Parser) readMeta(pos int) error {
 				if err != nil {
 					return err
 				}
+				if cls.ID == def.UnsetTypeID {
+					return fmt.Errorf("invalid type ID for class %s", cls.Name)
+				}
 
 				for k := 0; k < classElement.childCount; k++ {
 					field, err := p.readElement(strings, true)

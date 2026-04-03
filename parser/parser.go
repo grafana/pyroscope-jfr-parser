@@ -486,9 +486,6 @@ func (p *Parser) checkTypes() error {
 	typeFree := p.TypeMap.NameMap["profiler.Free"]
 
 	if typeExecutionSample != nil {
-		if typeExecutionSample.ID == def.UnsetTypeID {
-			return fmt.Errorf("invalid type ID for %s", typeExecutionSample.Name)
-		}
 		p.TypeMap.T_EXECUTION_SAMPLE = typeExecutionSample.ID
 		p.bindExecutionSample = types2.NewBindExecutionSample(typeExecutionSample, &p.TypeMap)
 	} else {
@@ -496,9 +493,6 @@ func (p *Parser) checkTypes() error {
 		p.bindExecutionSample = nil
 	}
 	if typeWallClockSample != nil {
-		if typeWallClockSample.ID == def.UnsetTypeID {
-			return fmt.Errorf("invalid type ID for %s", typeWallClockSample.Name)
-		}
 		p.TypeMap.T_WALL_CLOCK_SAMPLE = typeWallClockSample.ID
 		p.bindWallClockSample = types2.NewBindWallClockSample(typeWallClockSample, &p.TypeMap)
 	} else {
@@ -506,9 +500,6 @@ func (p *Parser) checkTypes() error {
 		p.bindWallClockSample = nil
 	}
 	if typeMalloc != nil {
-		if typeMalloc.ID == def.UnsetTypeID {
-			return fmt.Errorf("invalid type ID for %s", typeMalloc.Name)
-		}
 		p.TypeMap.T_MALLOC = typeMalloc.ID
 		p.bindMalloc = types2.NewBindMalloc(typeMalloc, &p.TypeMap)
 	} else {
@@ -517,9 +508,6 @@ func (p *Parser) checkTypes() error {
 	}
 
 	if typeFree != nil {
-		if typeFree.ID == def.UnsetTypeID {
-			return fmt.Errorf("invalid type ID for %s", typeFree.Name)
-		}
 		p.TypeMap.T_FREE = typeFree.ID
 		p.bindFree = types2.NewBindFree(typeFree, &p.TypeMap)
 	} else {
@@ -528,9 +516,6 @@ func (p *Parser) checkTypes() error {
 	}
 
 	if typeAllocInNewTLAB != nil {
-		if typeAllocInNewTLAB.ID == def.UnsetTypeID {
-			return fmt.Errorf("invalid type ID for %s", typeAllocInNewTLAB.Name)
-		}
 		p.TypeMap.T_ALLOC_IN_NEW_TLAB = typeAllocInNewTLAB.ID
 		p.bindAllocInNewTLAB = types2.NewBindObjectAllocationInNewTLAB(typeAllocInNewTLAB, &p.TypeMap)
 	} else {
@@ -539,9 +524,6 @@ func (p *Parser) checkTypes() error {
 	}
 
 	if typeALlocOutsideTLAB != nil {
-		if typeALlocOutsideTLAB.ID == def.UnsetTypeID {
-			return fmt.Errorf("invalid type ID for %s", typeALlocOutsideTLAB.Name)
-		}
 		p.TypeMap.T_ALLOC_OUTSIDE_TLAB = typeALlocOutsideTLAB.ID
 		p.bindAllocOutsideTLAB = types2.NewBindObjectAllocationOutsideTLAB(typeALlocOutsideTLAB, &p.TypeMap)
 	} else {
@@ -549,9 +531,6 @@ func (p *Parser) checkTypes() error {
 		p.bindAllocOutsideTLAB = nil
 	}
 	if typeAllocSample != nil {
-		if typeAllocSample.ID == def.UnsetTypeID {
-			return fmt.Errorf("invalid type ID for %s", typeAllocSample.Name)
-		}
 		p.TypeMap.T_ALLOC_SAMPLE = typeAllocSample.ID
 		p.bindAllocSample = types2.NewBindObjectAllocationSample(typeAllocSample, &p.TypeMap)
 	} else {
@@ -559,9 +538,6 @@ func (p *Parser) checkTypes() error {
 		p.bindAllocSample = nil
 	}
 	if typeMonitorEnter != nil {
-		if typeMonitorEnter.ID == def.UnsetTypeID {
-			return fmt.Errorf("invalid type ID for %s", typeMonitorEnter.Name)
-		}
 		p.TypeMap.T_MONITOR_ENTER = typeMonitorEnter.ID
 		p.bindMonitorEnter = types2.NewBindJavaMonitorEnter(typeMonitorEnter, &p.TypeMap)
 	} else {
@@ -570,9 +546,6 @@ func (p *Parser) checkTypes() error {
 	}
 
 	if typeThreadPark != nil {
-		if typeThreadPark.ID == def.UnsetTypeID {
-			return fmt.Errorf("invalid type ID for %s", typeThreadPark.Name)
-		}
 		p.TypeMap.T_THREAD_PARK = typeThreadPark.ID
 		p.bindThreadPark = types2.NewBindThreadPark(typeThreadPark, &p.TypeMap)
 	} else {
@@ -581,9 +554,6 @@ func (p *Parser) checkTypes() error {
 	}
 
 	if typeLiveObject != nil {
-		if typeLiveObject.ID == def.UnsetTypeID {
-			return fmt.Errorf("invalid type ID for %s", typeLiveObject.Name)
-		}
 		p.TypeMap.T_LIVE_OBJECT = typeLiveObject.ID
 		p.bindLiveObject = types2.NewBindLiveObject(typeLiveObject, &p.TypeMap)
 	} else {
@@ -592,9 +562,6 @@ func (p *Parser) checkTypes() error {
 	}
 
 	if typeActiveSetting != nil {
-		if typeActiveSetting.ID == def.UnsetTypeID {
-			return fmt.Errorf("invalid type ID for %s", typeActiveSetting.Name)
-		}
 		p.TypeMap.T_ACTIVE_SETTING = typeActiveSetting.ID
 		p.bindActiveSetting = types2.NewBindActiveSetting(typeActiveSetting, &p.TypeMap)
 	} else {
