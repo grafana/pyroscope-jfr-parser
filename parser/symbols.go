@@ -2,6 +2,7 @@ package parser
 
 import (
 	"regexp"
+	"strings"
 
 	"github.com/grafana/jfr-parser/parser/types"
 )
@@ -30,16 +31,28 @@ var cglibEnhancer = regexp.MustCompile("^(.+\\$\\$EnhancerBySpringCGLIB\\$\\$)(.
 // TODO
 // ./tmp/snappy-1.1.8-6fb9393a-3093-4706-a7e4-837efe01d078-libsnappyjava.so
 func mergeJVMGeneratedClasses(frame string) string {
-	frame = generatedMethodAccessor.ReplaceAllString(frame, "${1}_")
-	frame = lambdaGeneratedEnclosingClass.ReplaceAllString(frame, "${1}_")
-	frame = zstdJniSoLibName.ReplaceAllString(frame, "libzstd-jni-_.so")
-	frame = amazonCorrettoCryptoProvider.ReplaceAllString(frame, "libamazonCorrettoCryptoProvider_.so")
-	frame = pyroscopeAsyncProfiler.ReplaceAllString(frame, "libasyncProfiler-_.so")
-	frame = cglibEnhancer.ReplaceAllString(frame, "${1}_")
-	// todo(korniltsev): optimize this
-	// - [ ] replace inplace if underlying symbol if byte slice into the
-	// - [ ] less/no regexps
-
+	// Guard each regex with a cheap strings check so that ordinary class
+	// names (the vast majority) skip all regex work entirely.
+	// ReplaceAllString allocates even on no-match ([]byte(src) + string(b)),
+	// so avoiding the call is meaningful at scale.
+	if strings.HasPrefix(frame, "jdk/internal/reflect/GeneratedMethodAccessor") {
+		frame = generatedMethodAccessor.ReplaceAllString(frame, "${1}_")
+	}
+	if strings.Contains(frame, "$$Lambda") {
+		frame = lambdaGeneratedEnclosingClass.ReplaceAllString(frame, "${1}_")
+	}
+	if strings.Contains(frame, "libzstd-jni-") {
+		frame = zstdJniSoLibName.ReplaceAllString(frame, "libzstd-jni-_.so")
+	}
+	if strings.Contains(frame, "amazonCorrettoCryptoProvider") {
+		frame = amazonCorrettoCryptoProvider.ReplaceAllString(frame, "libamazonCorrettoCryptoProvider_.so")
+	}
+	if strings.Contains(frame, "libasyncProfiler-") {
+		frame = pyroscopeAsyncProfiler.ReplaceAllString(frame, "libasyncProfiler-_.so")
+	}
+	if strings.Contains(frame, "$$EnhancerBySpringCGLIB$$") {
+		frame = cglibEnhancer.ReplaceAllString(frame, "${1}_")
+	}
 	return frame
 }
 
