@@ -333,6 +333,47 @@ func BenchmarkParse(b *testing.B) {
 	}
 }
 
+// BenchmarkParseAlloc reproduces the allocation spike observed in the
+// Pyroscope distributor (distributor-alloc-spike.pprof). The hot paths are:
+//   - StackTraceList.Parse: make([]StackFrame, 0, n) per stack trace in each chunk
+//   - jfrPprofBuilders.addStacktrace: make([]uint64, 0, nLocs) + make([]int64, ...) per sample
+//   - ProfileBuilder.addLocation / addFunction / AddExternalSampleWithLabels: proto heap allocs
+//
+// Run with -memprofile=mem.pprof to capture an allocation profile for comparison.
+func BenchmarkParseAlloc(b *testing.B) {
+	r := heapReader()
+
+	cases := []testdata{
+		// Largest file: many stack traces → dominates StackTraceList.Parse allocs.
+		{jfr: "goland", expectedCount: 5},
+		// Multi-chunk variant: exercises chunk-boundary reset of IDMaps.
+		{jfr: "goland-multichunk", expectedCount: 5},
+		// CPU + lock + alloc: closest to the production event mix that triggered the spike.
+		{jfr: "cortex-dev-01__kafka-0__cpu_lock0_alloc0__0", expectedCount: 5},
+		// With labels snapshot: exercises AddExternalSampleWithLabels label allocs.
+		{jfr: "dump2", labels: "dump2.labels.pb.gz", expectedCount: 4},
+	}
+
+	for _, td := range cases {
+		b.Run(td.jfr, func(b *testing.B) {
+			jfr, _ := r(b, testdataDir+td.jfr+".jfr.gz")
+			ls, _ := readLabels(b, td, r)
+			b.SetBytes(int64(len(jfr)))
+			b.ReportAllocs()
+			b.ResetTimer()
+			for i := 0; i < b.N; i++ {
+				profiles, err := ParseJFR(jfr, parseInput, ls)
+				if err != nil {
+					b.Fatalf("ParseJFR: %s", err)
+				}
+				if len(profiles.Profiles) == 0 {
+					b.Fatalf("no profiles produced")
+				}
+			}
+		})
+	}
+}
+
 func toGoogleProfiles(t *testing.T, profiles []Profile) []gprofile {
 	res := make([]gprofile, 0, len(profiles))
 	for _, profile := range profiles {
