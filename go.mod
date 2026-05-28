@@ -1,6 +1,6 @@
 module github.com/grafana/jfr-parser
 
-go 1.24.0
+go 1.25.0
 
 require (
 	github.com/google/pprof v0.0.0-20260202012954-cb029daf43ef
