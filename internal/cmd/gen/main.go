@@ -75,6 +75,7 @@ func main() {
 	write("types/monitor_enter.go", generate(&Type_jdk_JavaMonitorEnter, options{}))
 	write("types/thread_park.go", generate(&Type_jdk_ThreadPark, options{}))
 	write("types/live_object.go", generate(&Type_profiler_LiveObject, options{}))
+	write("types/initial_system_property.go", generate(&Type_jdk_InitialSystemProperty, options{}))
 	write("types/skipper.go", generate(&def.Class{
 		Name:   "SkipConstantPool",
 		ID:     0,
