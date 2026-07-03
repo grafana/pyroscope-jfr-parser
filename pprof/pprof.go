@@ -58,7 +58,6 @@ type jfrPprofBuilders struct {
 }
 
 func (b *jfrPprofBuilders) setProcessRuntime(name, value string) {
-	println(name, value)
 	switch name {
 	case "java.vm.name":
 		b.javaVMName = strings.Clone(value)
