@@ -70,6 +70,18 @@ func NewBindWallClockSample(typ *def.Class, typeMap *def.TypeMap) *BindWallClock
 			} else {
 				res.Fields = append(res.Fields, BindFieldWallClockSample{Field: &typ.Fields[i]}) // skip changed field
 			}
+		case "traceIdHi":
+			if typ.Fields[i].Equals(&def.Field{Name: "traceIdHi", Type: typeMap.T_LONG, ConstantPool: false, Array: false}) {
+				res.Fields = append(res.Fields, BindFieldWallClockSample{Field: &typ.Fields[i], uint64: &res.Temp.TraceIdHi})
+			} else {
+				res.Fields = append(res.Fields, BindFieldWallClockSample{Field: &typ.Fields[i]}) // skip changed field
+			}
+		case "traceIdLo":
+			if typ.Fields[i].Equals(&def.Field{Name: "traceIdLo", Type: typeMap.T_LONG, ConstantPool: false, Array: false}) {
+				res.Fields = append(res.Fields, BindFieldWallClockSample{Field: &typ.Fields[i], uint64: &res.Temp.TraceIdLo})
+			} else {
+				res.Fields = append(res.Fields, BindFieldWallClockSample{Field: &typ.Fields[i]}) // skip changed field
+			}
 		case "samples":
 			if typ.Fields[i].Equals(&def.Field{Name: "samples", Type: typeMap.T_INT, ConstantPool: false, Array: false}) {
 				res.Fields = append(res.Fields, BindFieldWallClockSample{Field: &typ.Fields[i], uint32: &res.Temp.Samples})
@@ -91,6 +103,8 @@ type WallClockSample struct {
 	SpanId        uint64
 	SpanName      uint64
 	ContextId     uint64
+	TraceIdHi     uint64
+	TraceIdLo     uint64
 	Samples       uint32
 }
 

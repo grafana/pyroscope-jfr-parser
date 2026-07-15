@@ -69,6 +69,18 @@ func NewBindExecutionSample(typ *def.Class, typeMap *def.TypeMap) *BindExecution
 			} else {
 				res.Fields = append(res.Fields, BindFieldExecutionSample{Field: &typ.Fields[i]}) // skip changed field
 			}
+		case "traceIdHi":
+			if typ.Fields[i].Equals(&def.Field{Name: "traceIdHi", Type: typeMap.T_LONG, ConstantPool: false, Array: false}) {
+				res.Fields = append(res.Fields, BindFieldExecutionSample{Field: &typ.Fields[i], uint64: &res.Temp.TraceIdHi})
+			} else {
+				res.Fields = append(res.Fields, BindFieldExecutionSample{Field: &typ.Fields[i]}) // skip changed field
+			}
+		case "traceIdLo":
+			if typ.Fields[i].Equals(&def.Field{Name: "traceIdLo", Type: typeMap.T_LONG, ConstantPool: false, Array: false}) {
+				res.Fields = append(res.Fields, BindFieldExecutionSample{Field: &typ.Fields[i], uint64: &res.Temp.TraceIdLo})
+			} else {
+				res.Fields = append(res.Fields, BindFieldExecutionSample{Field: &typ.Fields[i]}) // skip changed field
+			}
 		default:
 			res.Fields = append(res.Fields, BindFieldExecutionSample{Field: &typ.Fields[i]}) // skip unknown new field
 		}
@@ -84,6 +96,8 @@ type ExecutionSample struct {
 	SpanId        uint64
 	SpanName      uint64
 	ContextId     uint64
+	TraceIdHi     uint64
+	TraceIdLo     uint64
 }
 
 func (this *ExecutionSample) Parse(data []byte, bind *BindExecutionSample, typeMap *def.TypeMap) (pos int, err error) {

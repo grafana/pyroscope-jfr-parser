@@ -70,6 +70,8 @@ func parse(parser *parser.Parser, piOriginal *ParseInput, jfrLabels *LabelsSnaps
 				ContextId: parser.ExecutionSample.ContextId,
 				SpanId:    parser.ExecutionSample.SpanId,
 				SpanName:  parser.ExecutionSample.SpanName,
+				TraceIdHi: parser.ExecutionSample.TraceIdHi,
+				TraceIdLo: parser.ExecutionSample.TraceIdLo,
 			}
 			if ts != nil && ts.Name != "STATE_SLEEPING" {
 				builders.addStacktrace(sampleTypeCPU, correlation, parser.ExecutionSample.StackTrace, values[:1])
@@ -83,6 +85,8 @@ func parse(parser *parser.Parser, piOriginal *ParseInput, jfrLabels *LabelsSnaps
 				ContextId: parser.WallClockSample.ContextId,
 				SpanId:    parser.WallClockSample.SpanId,
 				SpanName:  parser.WallClockSample.SpanName,
+				TraceIdHi: parser.WallClockSample.TraceIdHi,
+				TraceIdLo: parser.WallClockSample.TraceIdLo,
 			}
 			ts := parser.GetThreadState(parser.WallClockSample.State)
 			if ts != nil && ts.Name == "STATE_RUNNABLE" && event == "wall" {
@@ -95,6 +99,8 @@ func parse(parser *parser.Parser, piOriginal *ParseInput, jfrLabels *LabelsSnaps
 				ContextId: parser.ObjectAllocationInNewTLAB.ContextId,
 				SpanId:    parser.ObjectAllocationInNewTLAB.SpanId,
 				SpanName:  parser.ObjectAllocationInNewTLAB.SpanName,
+				TraceIdHi: parser.ObjectAllocationInNewTLAB.TraceIdHi,
+				TraceIdLo: parser.ObjectAllocationInNewTLAB.TraceIdLo,
 			}
 			builders.addStacktrace(sampleTypeInTLAB, correlation, parser.ObjectAllocationInNewTLAB.StackTrace, values[:2])
 		case parser.TypeMap.T_ALLOC_OUTSIDE_TLAB:
@@ -103,6 +109,8 @@ func parse(parser *parser.Parser, piOriginal *ParseInput, jfrLabels *LabelsSnaps
 				ContextId: parser.ObjectAllocationOutsideTLAB.ContextId,
 				SpanId:    parser.ObjectAllocationOutsideTLAB.SpanId,
 				SpanName:  parser.ObjectAllocationOutsideTLAB.SpanName,
+				TraceIdHi: parser.ObjectAllocationOutsideTLAB.TraceIdHi,
+				TraceIdLo: parser.ObjectAllocationOutsideTLAB.TraceIdLo,
 			}
 			builders.addStacktrace(sampleTypeOutTLAB, correlation, parser.ObjectAllocationOutsideTLAB.StackTrace, values[:2])
 		case parser.TypeMap.T_ALLOC_SAMPLE:
@@ -114,6 +122,8 @@ func parse(parser *parser.Parser, piOriginal *ParseInput, jfrLabels *LabelsSnaps
 				ContextId: parser.JavaMonitorEnter.ContextId,
 				SpanId:    parser.JavaMonitorEnter.SpanId,
 				SpanName:  parser.JavaMonitorEnter.SpanName,
+				TraceIdHi: parser.JavaMonitorEnter.TraceIdHi,
+				TraceIdLo: parser.JavaMonitorEnter.TraceIdLo,
 			}
 			builders.addStacktrace(sampleTypeLock, correlation, parser.JavaMonitorEnter.StackTrace, values[:2])
 		case parser.TypeMap.T_THREAD_PARK:

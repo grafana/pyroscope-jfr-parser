@@ -479,6 +479,42 @@ func TestProfileId(t *testing.T) {
 	assert.Equal(t, "00000000000000ef", profileIdString(0xef))
 }
 
+func TestTraceId(t *testing.T) {
+	assert.Equal(t, "00000000000000010000000000000002", traceIdString(0x1, 0x2))
+	assert.Equal(t, "0123456789abcdeffedcba9876543210", traceIdString(0x0123456789abcdef, 0xfedcba9876543210))
+}
+
+// TestTraceIdLabel verifies the trace_id label is emitted from a
+// StacktraceCorrelation carrying a nonzero 128-bit trace id, and omitted when
+// both halves are zero.
+func TestTraceIdLabel(t *testing.T) {
+	traceIdOf := func(correlation StacktraceCorrelation) (string, bool) {
+		b := NewProfileBuilderWithLabels(0)
+		ls := &LabelsSnapshot{Strings: map[int64]string{}}
+		b.AddExternalSampleWithLabels([]uint64{1}, []int64{1}, nil, ls, 1, correlation)
+		require.Len(t, b.Sample, 1)
+		for _, l := range b.Sample[0].Label {
+			if b.StringTable[l.Key] == "trace_id" {
+				return b.StringTable[l.Str], true
+			}
+		}
+		return "", false
+	}
+
+	v, ok := traceIdOf(StacktraceCorrelation{TraceIdHi: 0x1, TraceIdLo: 0x2})
+	assert.True(t, ok)
+	assert.Equal(t, "00000000000000010000000000000002", v)
+
+	// low half only
+	v, ok = traceIdOf(StacktraceCorrelation{TraceIdLo: 0xabc})
+	assert.True(t, ok)
+	assert.Equal(t, "00000000000000000000000000000abc", v)
+
+	// both zero -> no label
+	_, ok = traceIdOf(StacktraceCorrelation{})
+	assert.False(t, ok)
+}
+
 // TestParseJFROversizedEventSize is a regression test for
 // https://github.com/grafana/jfr-parser/issues/90.
 // An event whose size field encodes a uint64 with the high bit set causes

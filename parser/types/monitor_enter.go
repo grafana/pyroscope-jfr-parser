@@ -87,6 +87,18 @@ func NewBindJavaMonitorEnter(typ *def.Class, typeMap *def.TypeMap) *BindJavaMoni
 			} else {
 				res.Fields = append(res.Fields, BindFieldJavaMonitorEnter{Field: &typ.Fields[i]}) // skip changed field
 			}
+		case "traceIdHi":
+			if typ.Fields[i].Equals(&def.Field{Name: "traceIdHi", Type: typeMap.T_LONG, ConstantPool: false, Array: false}) {
+				res.Fields = append(res.Fields, BindFieldJavaMonitorEnter{Field: &typ.Fields[i], uint64: &res.Temp.TraceIdHi})
+			} else {
+				res.Fields = append(res.Fields, BindFieldJavaMonitorEnter{Field: &typ.Fields[i]}) // skip changed field
+			}
+		case "traceIdLo":
+			if typ.Fields[i].Equals(&def.Field{Name: "traceIdLo", Type: typeMap.T_LONG, ConstantPool: false, Array: false}) {
+				res.Fields = append(res.Fields, BindFieldJavaMonitorEnter{Field: &typ.Fields[i], uint64: &res.Temp.TraceIdLo})
+			} else {
+				res.Fields = append(res.Fields, BindFieldJavaMonitorEnter{Field: &typ.Fields[i]}) // skip changed field
+			}
 		default:
 			res.Fields = append(res.Fields, BindFieldJavaMonitorEnter{Field: &typ.Fields[i]}) // skip unknown new field
 		}
@@ -105,6 +117,8 @@ type JavaMonitorEnter struct {
 	ContextId     uint64
 	SpanId        uint64
 	SpanName      uint64
+	TraceIdHi     uint64
+	TraceIdLo     uint64
 }
 
 func (this *JavaMonitorEnter) Parse(data []byte, bind *BindJavaMonitorEnter, typeMap *def.TypeMap) (pos int, err error) {

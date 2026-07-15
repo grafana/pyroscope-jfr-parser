@@ -311,6 +311,8 @@ var Type_jdk_ExecutionSample = def.Class{
 		{Name: "spanId", Type: T_LONG, ConstantPool: false},
 		{Name: "spanName", Type: T_LONG, ConstantPool: false},
 		{Name: "contextId", Type: T_LONG, ConstantPool: false},
+		{Name: "traceIdHi", Type: T_LONG, ConstantPool: false},
+		{Name: "traceIdLo", Type: T_LONG, ConstantPool: false},
 	},
 }
 
@@ -325,6 +327,8 @@ var Type_profiler_WallClockSample = def.Class{
 		{Name: "spanId", Type: T_LONG, ConstantPool: false},
 		{Name: "spanName", Type: T_LONG, ConstantPool: false},
 		{Name: "contextId", Type: T_LONG, ConstantPool: false},
+		{Name: "traceIdHi", Type: T_LONG, ConstantPool: false},
+		{Name: "traceIdLo", Type: T_LONG, ConstantPool: false},
 		{Name: "samples", Type: T_INT, ConstantPool: false},
 	},
 }
@@ -342,6 +346,8 @@ var Type_jdk_ObjectAllocationInNewTLAB = def.Class{
 		{Name: "contextId", Type: T_LONG, ConstantPool: false},
 		{Name: "spanId", Type: T_LONG, ConstantPool: false},
 		{Name: "spanName", Type: T_LONG, ConstantPool: false},
+		{Name: "traceIdHi", Type: T_LONG, ConstantPool: false},
+		{Name: "traceIdLo", Type: T_LONG, ConstantPool: false},
 	},
 }
 var Type_jdk_ObjectAllocationOutsideTLAB = def.Class{
@@ -356,6 +362,8 @@ var Type_jdk_ObjectAllocationOutsideTLAB = def.Class{
 		{Name: "contextId", Type: T_LONG, ConstantPool: false},
 		{Name: "spanId", Type: T_LONG, ConstantPool: false},
 		{Name: "spanName", Type: T_LONG, ConstantPool: false},
+		{Name: "traceIdHi", Type: T_LONG, ConstantPool: false},
+		{Name: "traceIdLo", Type: T_LONG, ConstantPool: false},
 	},
 }
 var Type_jdk_ObjectAllocationSample = def.Class{
@@ -383,6 +391,8 @@ var Type_jdk_JavaMonitorEnter = def.Class{
 		{Name: "contextId", Type: T_LONG, ConstantPool: false},
 		{Name: "spanId", Type: T_LONG, ConstantPool: false},
 		{Name: "spanName", Type: T_LONG, ConstantPool: false},
+		{Name: "traceIdHi", Type: T_LONG, ConstantPool: false},
+		{Name: "traceIdLo", Type: T_LONG, ConstantPool: false},
 	},
 }
 var Type_jdk_ThreadPark = def.Class{

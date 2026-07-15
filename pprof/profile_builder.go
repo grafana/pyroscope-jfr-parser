@@ -133,6 +133,7 @@ func (m *ProfileBuilder) AddExternalSampleWithLabels(locs []uint64, values []int
 	}
 	const LabelProfileId = "profile_id"
 	const LabelSpanName = "span_name"
+	const LabelTraceId = "trace_id"
 	capacity := 0
 	if labelsCtx != nil {
 		capacity += len(labelsCtx.Labels)
@@ -141,6 +142,9 @@ func (m *ProfileBuilder) AddExternalSampleWithLabels(locs []uint64, values []int
 		capacity++
 	}
 	if correlation.SpanName != 0 {
+		capacity++
+	}
+	if correlation.TraceIdHi != 0 || correlation.TraceIdLo != 0 {
 		capacity++
 	}
 	if labelsCtx != nil {
@@ -168,6 +172,12 @@ func (m *ProfileBuilder) AddExternalSampleWithLabels(locs []uint64, values []int
 			})
 		}
 	}
+	if correlation.TraceIdHi != 0 || correlation.TraceIdLo != 0 {
+		sample.Label = append(sample.Label, &profilev1.Label{
+			Key: m.addString(LabelTraceId),
+			Str: m.addString(traceIdString(correlation.TraceIdHi, correlation.TraceIdLo)),
+		})
+	}
 }
 
 func profileIdString(profileId uint64) string {
@@ -176,10 +186,18 @@ func profileIdString(profileId uint64) string {
 	//return strconv.FormatUint(profileId, 16)
 }
 
+// traceIdString renders a 128-bit OpenTelemetry trace id (high and low 64-bit
+// halves) as a 32-char hex string.
+func traceIdString(hi, lo uint64) string {
+	return fmt.Sprintf("%016x%016x", hi, lo)
+}
+
 type StacktraceCorrelation struct {
 	ContextId uint64
 	SpanId    uint64
 	SpanName  uint64
+	TraceIdHi uint64
+	TraceIdLo uint64
 }
 
 // FindExternalSampleWithLabels deprecated
