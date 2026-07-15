@@ -1,6 +1,8 @@
 package pprof
 
 import (
+	"strings"
+
 	"github.com/grafana/jfr-parser/parser"
 	"github.com/grafana/jfr-parser/parser/types"
 )
@@ -48,7 +50,30 @@ type jfrPprofBuilders struct {
 	period        int64
 	opt           *pprofOptions
 
+	javaVMName                 string
+	javaVMVersion              string
+	javaVMSpecificationVersion string
+
 	metrics ParseMetrics
+}
+
+func (b *jfrPprofBuilders) setProcessRuntime(name, value string) {
+	switch name {
+	case "java.vm.name":
+		b.javaVMName = strings.Clone(value)
+	case "java.vm.version":
+		b.javaVMVersion = strings.Clone(value)
+	case "java.vm.specification.version":
+		b.javaVMSpecificationVersion = strings.Clone(value)
+	}
+}
+
+func javaMajorVersion(specificationVersion string) string {
+	version := specificationVersion
+	if strings.HasPrefix(version, "1.") {
+		version = strings.TrimPrefix(version, "1.")
+	}
+	return version
 }
 
 func (b *jfrPprofBuilders) addStacktrace(sampleType int64, correlation StacktraceCorrelation, ref types.StackTraceRef, values []int64) {
@@ -193,7 +218,10 @@ func (b *jfrPprofBuilders) build(jfrEvent string) *Profiles {
 		})
 	}
 	return &Profiles{
-		Profiles: profiles,
-		JFREvent: jfrEvent,
+		Profiles:                   profiles,
+		JFREvent:                   jfrEvent,
+		ProcessRuntimeName:         b.javaVMName,
+		ProcessRuntimeVersion:      b.javaVMVersion,
+		ProcessRuntimeVersionMajor: javaMajorVersion(b.javaVMSpecificationVersion),
 	}
 }

@@ -3,6 +3,7 @@ package pprof
 import (
 	"fmt"
 	"io"
+	"strings"
 
 	"github.com/grafana/jfr-parser/parser"
 )
@@ -136,8 +137,10 @@ func parse(parser *parser.Parser, piOriginal *ParseInput, jfrLabels *LabelsSnaps
 			builders.addStacktrace(sampleTypeMalloc, StacktraceCorrelation{}, parser.Malloc.StackTrace, values[:2])
 		case parser.TypeMap.T_ACTIVE_SETTING:
 			if parser.ActiveSetting.Name == "event" {
-				event = parser.ActiveSetting.Value
+				event = strings.Clone(parser.ActiveSetting.Value)
 			}
+		case parser.TypeMap.T_INITIAL_SYSTEM_PROPERTY:
+			builders.setProcessRuntime(parser.InitialSystemProperty.Key, parser.InitialSystemProperty.Value)
 		}
 	}
 

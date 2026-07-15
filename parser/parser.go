@@ -60,6 +60,7 @@ type Parser struct {
 	ThreadPark                  types2.ThreadPark
 	LiveObject                  types2.LiveObject
 	ActiveSetting               types2.ActiveSetting
+	InitialSystemProperty       types2.InitialSystemProperty
 
 	header   ChunkHeader
 	options  Options
@@ -84,16 +85,17 @@ type Parser struct {
 
 	bindExecutionSample *types2.BindExecutionSample
 
-	bindAllocInNewTLAB   *types2.BindObjectAllocationInNewTLAB
-	bindAllocOutsideTLAB *types2.BindObjectAllocationOutsideTLAB
-	bindAllocSample      *types2.BindObjectAllocationSample
-	bindMonitorEnter     *types2.BindJavaMonitorEnter
-	bindThreadPark       *types2.BindThreadPark
-	bindLiveObject       *types2.BindLiveObject
-	bindActiveSetting    *types2.BindActiveSetting
-	bindWallClockSample  *types2.BindWallClockSample
-	bindMalloc           *types2.BindMalloc
-	bindFree             *types2.BindFree
+	bindAllocInNewTLAB        *types2.BindObjectAllocationInNewTLAB
+	bindAllocOutsideTLAB      *types2.BindObjectAllocationOutsideTLAB
+	bindAllocSample           *types2.BindObjectAllocationSample
+	bindMonitorEnter          *types2.BindJavaMonitorEnter
+	bindThreadPark            *types2.BindThreadPark
+	bindLiveObject            *types2.BindLiveObject
+	bindActiveSetting         *types2.BindActiveSetting
+	bindInitialSystemProperty *types2.BindInitialSystemProperty
+	bindWallClockSample       *types2.BindWallClockSample
+	bindMalloc                *types2.BindMalloc
+	bindFree                  *types2.BindFree
 }
 
 func NewParser(buf []byte, options Options) *Parser {
@@ -249,6 +251,17 @@ func (p *Parser) ParseEvent() (def.TypeID, error) {
 				continue
 			}
 			_, err := p.ActiveSetting.Parse(p.buf[p.pos:], p.bindActiveSetting, &p.TypeMap)
+			if err != nil {
+				return 0, err
+			}
+			p.pos = pp + int(size)
+			return ttyp, nil
+		case p.TypeMap.T_INITIAL_SYSTEM_PROPERTY:
+			if p.bindInitialSystemProperty == nil {
+				p.pos = pp + int(size) // skip
+				continue
+			}
+			_, err := p.InitialSystemProperty.Parse(p.buf[p.pos:], p.bindInitialSystemProperty, &p.TypeMap)
 			if err != nil {
 				return 0, err
 			}
@@ -570,6 +583,7 @@ func (p *Parser) checkTypes() error {
 	typeThreadPark := p.TypeMap.NameMap["jdk.ThreadPark"]
 	typeLiveObject := p.TypeMap.NameMap["profiler.LiveObject"]
 	typeActiveSetting := p.TypeMap.NameMap["jdk.ActiveSetting"]
+	typeInitialSystemProperty := p.TypeMap.NameMap["jdk.InitialSystemProperty"]
 
 	typeMalloc := p.TypeMap.NameMap["profiler.Malloc"]
 	typeFree := p.TypeMap.NameMap["profiler.Free"]
@@ -656,6 +670,13 @@ func (p *Parser) checkTypes() error {
 	} else {
 		p.TypeMap.T_ACTIVE_SETTING = -1
 		p.bindActiveSetting = nil
+	}
+	if typeInitialSystemProperty != nil {
+		p.TypeMap.T_INITIAL_SYSTEM_PROPERTY = typeInitialSystemProperty.ID
+		p.bindInitialSystemProperty = types2.NewBindInitialSystemProperty(typeInitialSystemProperty, &p.TypeMap)
+	} else {
+		p.TypeMap.T_INITIAL_SYSTEM_PROPERTY = -1
+		p.bindInitialSystemProperty = nil
 	}
 
 	p.FrameTypes.Reset()

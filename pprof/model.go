@@ -19,6 +19,16 @@ type Profiles struct {
 	Profiles []Profile
 	JFREvent string
 
+	// ProcessRuntimeName is read from java.vm.name because JFR InitialSystemProperty
+	// records expose the VM property set, not the full java.lang.System properties.
+	ProcessRuntimeName string
+	// ProcessRuntimeVersion is read from java.vm.version because JFR InitialSystemProperty
+	// records expose the VM property set, not the full java.lang.System properties.
+	ProcessRuntimeVersion string
+	// ProcessRuntimeVersionMajor is derived from java.vm.specification.version.
+	// Legacy versions like 1.8 are normalized to 8.
+	ProcessRuntimeVersionMajor string
+
 	ParseMetrics ParseMetrics
 }
 
