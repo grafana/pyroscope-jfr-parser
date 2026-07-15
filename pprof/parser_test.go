@@ -194,6 +194,15 @@ var testFiles = []testdata{
 		expectedCount: 2,
 		options:       nil,
 	},
+	{
+		// Captured with the grafana/async-profiler fork (v4.4.0.0) which emits
+		// traceIdHi/traceIdLo; the worker thread set trace id
+		// 0123456789abcdeffedcba9876543210 => samples carry a trace_id label.
+		jfr:           "traceid",
+		labels:        "",
+		expectedCount: 1,
+		options:       nil,
+	},
 }
 
 type gprofile struct {
