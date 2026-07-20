@@ -10,6 +10,9 @@ import (
 type pprofOptions struct {
 	truncatedFrame       bool
 	disablePanicRecovery bool
+	threadFrame          bool
+	threadLabelKey       string
+	threadLabelFn        func(threadName string) string
 }
 type Option func(*pprofOptions)
 
@@ -22,6 +25,29 @@ func WithTruncatedFrame(v bool) Option {
 func WithDisablePanicRecovery(v bool) Option {
 	return func(o *pprofOptions) {
 		o.disablePanicRecovery = v
+	}
+}
+
+// WithThreadFrame, when enabled, adds the sampled thread's name as a synthetic
+// root frame beneath each execution-sample stack, so flame graphs split by the
+// thread that ran the sample. Requires the profile to have been recorded with
+// per-thread sampling. Off by default.
+func WithThreadFrame(v bool) Option {
+	return func(o *pprofOptions) {
+		o.threadFrame = v
+	}
+}
+
+// WithThreadLabel adds a pprof sample label to each execution sample whose value
+// is derived from the sampled thread's name by fn. The caller supplies the
+// naming convention (e.g. extracting a thread-pool name via regexp), keeping
+// this package free of application-specific parsing. Requires per-thread
+// sampling. If fn returns "" for a sample, no label is added for it. A no-op
+// unless key is non-empty and fn is non-nil.
+func WithThreadLabel(key string, fn func(threadName string) string) Option {
+	return func(o *pprofOptions) {
+		o.threadLabelKey = key
+		o.threadLabelFn = fn
 	}
 }
 
@@ -72,6 +98,28 @@ func parse(parser *parser.Parser, piOriginal *ParseInput, jfrLabels *LabelsSnaps
 				SpanName:  parser.ExecutionSample.SpanName,
 				TraceIdHi: parser.ExecutionSample.TraceIdHi,
 				TraceIdLo: parser.ExecutionSample.TraceIdLo,
+			}
+			// When async-profiler runs with -t, each sample carries the thread it
+			// ran on. Managed JVM threads carry their full name in JavaName;
+			// native threads (GC, JIT compiler, VM tasks) have no JavaName and
+			// are identified only by OsName, so fall back to it. The name is used
+			// only when a thread frame or a thread label was requested.
+			if opt.threadFrame || (opt.threadLabelKey != "" && opt.threadLabelFn != nil) {
+				if t := parser.GetThread(parser.ExecutionSample.SampledThread); t != nil {
+					name := t.JavaName
+					if name == "" {
+						name = t.OsName
+					}
+					if opt.threadFrame {
+						correlation.ThreadName = name
+					}
+					if name != "" && opt.threadLabelFn != nil && opt.threadLabelKey != "" {
+						if v := opt.threadLabelFn(name); v != "" {
+							correlation.ThreadLabelKey = opt.threadLabelKey
+							correlation.ThreadLabelValue = v
+						}
+					}
+				}
 			}
 			if ts != nil && ts.Name != "STATE_SLEEPING" {
 				builders.addStacktrace(sampleTypeCPU, correlation, parser.ExecutionSample.StackTrace, values[:1])

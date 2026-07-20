@@ -117,6 +117,9 @@ func (b *jfrPprofBuilders) addStacktrace(sampleType int64, correlation Stacktrac
 	if b.opt.truncatedFrame && st.Truncated {
 		locations = append(locations, p.getTruncatedLocation())
 	}
+	if correlation.ThreadName != "" {
+		locations = append(locations, p.getThreadLocation(correlation.ThreadName))
+	}
 	vs := make([]int64, len(values))
 	addValues(vs)
 	p.AddExternalSampleWithLabels(locations, vs, b.contextLabels(correlation.ContextId), b.jfrLabels, uint64(ref), correlation)
