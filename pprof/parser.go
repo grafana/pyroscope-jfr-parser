@@ -99,16 +99,11 @@ func parse(parser *parser.Parser, piOriginal *ParseInput, jfrLabels *LabelsSnaps
 				TraceIdHi: parser.ExecutionSample.TraceIdHi,
 				TraceIdLo: parser.ExecutionSample.TraceIdLo,
 			}
-			// When async-profiler runs with -t, each sample carries the thread it
-			// ran on. Managed JVM threads carry their full name in JavaName;
-			// native threads (GC, JIT compiler, VM tasks) have no JavaName and
-			// are identified only by OsName, so fall back to it. The name is used
-			// only when a thread frame or a thread label was requested.
 			if opt.threadFrame || (opt.threadLabelKey != "" && opt.threadLabelFn != nil) {
 				if t := parser.GetThread(parser.ExecutionSample.SampledThread); t != nil {
 					name := t.JavaName
 					if name == "" {
-						name = t.OsName
+						name = t.OsName // native threads (GC, JIT compiler, VM tasks, etc)
 					}
 					if opt.threadFrame {
 						correlation.ThreadName = name
