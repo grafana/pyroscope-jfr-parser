@@ -37,7 +37,7 @@ func funcNames(p *profilev1.Profile) map[string]bool {
 }
 
 // leafFunc returns the name of the last location's function in a sample, which
-// is the synthetic root frame when WithThreadFrame is enabled.
+// is the synthetic root frame when the thread frame is enabled.
 func leafFunc(p *profilev1.Profile, s *profilev1.Sample) string {
 	locID := s.LocationId[len(s.LocationId)-1]
 	for _, loc := range p.Location {
@@ -52,35 +52,47 @@ func leafFunc(p *profilev1.Profile, s *profilev1.Sample) string {
 	return ""
 }
 
-func TestWithThreadFrame(t *testing.T) {
+// poolTransform collapses per-thread names such as "http-nio-auto-1-exec-9" to
+// the pool name "http-nio-auto".
+func poolTransform(name string) string {
+	re := regexp.MustCompile(`^(.*?)-\d`)
+	if m := re.FindStringSubmatch(name); len(m) > 1 {
+		return m[1]
+	}
+	return ""
+}
+
+func TestThreadFrame(t *testing.T) {
 	// The "traceid" fixture is recorded per-thread and has a worker thread that
 	// burns cpu, so its samples carry a resolvable thread name.
 	base := cpuProfile(t, "traceid")
-	withFrame := cpuProfile(t, "traceid", WithThreadFrame(true))
+	withFrame := cpuProfile(t, "traceid", WithThreadInfo(ThreadInfoOptions{Frame: true}))
 
-	// A thread frame appears as a new root function named after a thread.
 	require.False(t, funcNames(base)["worker"], "base profile should not have a thread frame")
 	require.True(t, funcNames(withFrame)["worker"], "expected a synthetic frame for the worker thread")
 
-	// Every sample gains exactly one extra (root) location for its thread.
 	require.Greater(t, len(withFrame.Sample), 0)
 	for i, s := range withFrame.Sample {
 		require.NotEmpty(t, leafFunc(withFrame, s), "sample %d has no root frame", i)
 	}
 }
 
-func TestWithThreadLabel(t *testing.T) {
-	// Collapse per-thread names such as "http-nio-auto-1-exec-9" to the pool
-	// name "http-nio-auto" so samples aggregate by pool instead of by thread.
-	re := regexp.MustCompile(`^(.*?)-\d`)
-	pool := func(name string) string {
-		if m := re.FindStringSubmatch(name); len(m) > 1 {
-			return m[1]
-		}
-		return ""
-	}
+// TestThreadFrameTransform checks the shared transform also applies to the
+// frame, so the graph can split by pool rather than by individual thread.
+func TestThreadFrameTransform(t *testing.T) {
+	p := cpuProfile(t, "async-profiler", WithThreadInfo(ThreadInfoOptions{
+		Frame:     true,
+		Transform: poolTransform,
+	}))
+	require.True(t, funcNames(p)["http-nio-auto"], "expected a collapsed pool frame")
+	require.False(t, funcNames(p)["http-nio-auto-1-exec-9"], "raw thread name should not be a frame")
+}
 
-	p := cpuProfile(t, "async-profiler", WithThreadLabel("thread_pool", pool))
+func TestThreadLabel(t *testing.T) {
+	p := cpuProfile(t, "async-profiler", WithThreadInfo(ThreadInfoOptions{
+		LabelKey:  "thread_pool",
+		Transform: poolTransform,
+	}))
 
 	labelled := 0
 	for _, s := range p.Sample {
@@ -89,25 +101,23 @@ func TestWithThreadLabel(t *testing.T) {
 				labelled++
 				v := str(p, l.Str)
 				require.NotEmpty(t, v)
-				// The label carries the collapsed pool name, not a raw
-				// "-<n>"-suffixed thread name.
 				require.False(t, regexp.MustCompile(`-\d+$`).MatchString(v),
 					"thread_pool label %q should be collapsed", v)
 			}
 		}
 	}
 	require.Greater(t, labelled, 0, "expected some samples to carry a thread_pool label")
-
-	// A pool label must keep samples on different pools distinct rather than
-	// merging them.
 	require.True(t, hasLabelValue(p, "thread_pool", "http-nio-auto"),
 		"expected the http-nio-auto pool to be labelled")
 }
 
-// TestWithThreadLabelNoop verifies the label is opt-in: an empty key or nil fn
-// adds nothing.
-func TestWithThreadLabelNoop(t *testing.T) {
-	p := cpuProfile(t, "async-profiler", WithThreadLabel("", func(string) string { return "x" }))
+// TestThreadInfoNoop verifies it is opt-in: with neither frame nor label key,
+// nothing is added even when a transform is supplied.
+func TestThreadInfoNoop(t *testing.T) {
+	p := cpuProfile(t, "async-profiler", WithThreadInfo(ThreadInfoOptions{
+		Transform: func(string) string { return "x" },
+	}))
+	require.False(t, funcNames(p)["x"])
 	for _, s := range p.Sample {
 		for _, l := range s.Label {
 			require.NotEqual(t, "x", str(p, l.Str))

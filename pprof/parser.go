@@ -10,9 +10,7 @@ import (
 type pprofOptions struct {
 	truncatedFrame       bool
 	disablePanicRecovery bool
-	threadFrame          bool
-	threadLabelKey       string
-	threadLabelFn        func(threadName string) string
+	thread               ThreadInfoOptions
 }
 type Option func(*pprofOptions)
 
@@ -28,27 +26,27 @@ func WithDisablePanicRecovery(v bool) Option {
 	}
 }
 
-// WithThreadFrame, when enabled, adds the sampled thread's name as a synthetic
-// root frame beneath each execution-sample stack, so flame graphs split by the
-// thread that ran the sample. Requires the profile to have been recorded with
-// per-thread sampling. Off by default.
-func WithThreadFrame(v bool) Option {
+// ThreadInfoOptions controls how the sampled thread of each execution sample is
+// surfaced. Requires per-thread sampling (async-profiler -t). All fields optional:
+// Frame renders the thread name as a root frame; LabelKey adds a sample label
+// under that key; Transform maps the raw thread name to the value used for both
+// (e.g. collapsing to a pool name), returning "" to omit and nil to use the raw name.
+type ThreadInfoOptions struct {
+	Frame     bool
+	LabelKey  string
+	Transform func(threadName string) string
+}
+
+// WithThreadInfo surfaces the sampled thread as a root frame and/or a sample
+// label, applying a shared name transform to both. Off by default.
+func WithThreadInfo(t ThreadInfoOptions) Option {
 	return func(o *pprofOptions) {
-		o.threadFrame = v
+		o.thread = t
 	}
 }
 
-// WithThreadLabel adds a pprof sample label to each execution sample whose value
-// is derived from the sampled thread's name by fn. The caller supplies the
-// naming convention (e.g. extracting a thread-pool name via regexp), keeping
-// this package free of application-specific parsing. Requires per-thread
-// sampling. If fn returns "" for a sample, no label is added for it. A no-op
-// unless key is non-empty and fn is non-nil.
-func WithThreadLabel(key string, fn func(threadName string) string) Option {
-	return func(o *pprofOptions) {
-		o.threadLabelKey = key
-		o.threadLabelFn = fn
-	}
+func (t ThreadInfoOptions) enabled() bool {
+	return t.Frame || t.LabelKey != ""
 }
 
 func ParseJFR(body []byte, pi *ParseInput, jfrLabels *LabelsSnapshot, opts ...Option) (res *Profiles, err error) {
@@ -99,19 +97,22 @@ func parse(parser *parser.Parser, piOriginal *ParseInput, jfrLabels *LabelsSnaps
 				TraceIdHi: parser.ExecutionSample.TraceIdHi,
 				TraceIdLo: parser.ExecutionSample.TraceIdLo,
 			}
-			if opt.threadFrame || (opt.threadLabelKey != "" && opt.threadLabelFn != nil) {
+			if opt.thread.enabled() {
 				if t := parser.GetThread(parser.ExecutionSample.SampledThread); t != nil {
 					name := t.JavaName
 					if name == "" {
 						name = t.OsName // native threads (GC, JIT compiler, VM tasks, etc)
 					}
-					if opt.threadFrame {
-						correlation.ThreadName = name
+					if opt.thread.Transform != nil {
+						name = opt.thread.Transform(name)
 					}
-					if name != "" && opt.threadLabelFn != nil && opt.threadLabelKey != "" {
-						if v := opt.threadLabelFn(name); v != "" {
-							correlation.ThreadLabelKey = opt.threadLabelKey
-							correlation.ThreadLabelValue = v
+					if name != "" {
+						if opt.thread.Frame {
+							correlation.ThreadName = name
+						}
+						if opt.thread.LabelKey != "" {
+							correlation.ThreadLabelKey = opt.thread.LabelKey
+							correlation.ThreadLabelValue = name
 						}
 					}
 				}
