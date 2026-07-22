@@ -79,6 +79,24 @@ func parse(parser *parser.Parser, piOriginal *ParseInput, jfrLabels *LabelsSnaps
 
 	var values = [2]int64{1, 0}
 
+	// Transform is called per distinct thread name rather than per sample, since
+	// there are far fewer threads than samples and it may allocate.
+	var threadNameCache map[string]string
+	transformThreadName := func(name string) string {
+		if opt.thread.Transform == nil {
+			return name
+		}
+		if v, ok := threadNameCache[name]; ok {
+			return v
+		}
+		v := opt.thread.Transform(name)
+		if threadNameCache == nil {
+			threadNameCache = map[string]string{}
+		}
+		threadNameCache[name] = v
+		return v
+	}
+
 	for {
 		typ, err := parser.ParseEvent()
 		if err != nil {
@@ -103,9 +121,7 @@ func parse(parser *parser.Parser, piOriginal *ParseInput, jfrLabels *LabelsSnaps
 					if name == "" {
 						name = t.OsName // native threads (GC, JIT compiler, VM tasks, etc)
 					}
-					if opt.thread.Transform != nil {
-						name = opt.thread.Transform(name)
-					}
+					name = transformThreadName(name)
 					if name != "" {
 						if opt.thread.Frame {
 							correlation.ThreadName = name
