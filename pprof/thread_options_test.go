@@ -125,6 +125,24 @@ func TestThreadInfoNoop(t *testing.T) {
 	}
 }
 
+// TestThreadTransformMemoized checks the transform runs once per distinct thread
+// name, not once per sample.
+func TestThreadTransformMemoized(t *testing.T) {
+	seen := map[string]int{}
+	p := cpuProfile(t, "async-profiler", WithThreadInfo(ThreadInfoOptions{
+		LabelKey: "thread_pool",
+		Transform: func(name string) string {
+			seen[name]++
+			return poolTransform(name)
+		},
+	}))
+	require.Greater(t, len(p.Sample), len(seen),
+		"expected more samples than distinct transform inputs")
+	for name, n := range seen {
+		require.Equal(t, 1, n, "transform called %d times for %q, expected once", n, name)
+	}
+}
+
 func hasLabelValue(p *profilev1.Profile, key, value string) bool {
 	for _, s := range p.Sample {
 		for _, l := range s.Label {
