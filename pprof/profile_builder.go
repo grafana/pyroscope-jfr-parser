@@ -14,6 +14,7 @@ type ProfileBuilder struct {
 	metricName                    string
 
 	truncatedLoc uint64
+	threadLoc    map[string]uint64
 }
 
 type sampleID struct {
@@ -128,12 +129,13 @@ func (m *ProfileBuilder) AddExternalSampleWithLabels(locs []uint64, values []int
 	}
 	m.externalSampleID2SampleIndex[sampleID{locationsID: locationsID, correlation: correlation}] = uint32(len(m.Profile.Sample))
 	m.Profile.Sample = append(m.Profile.Sample, sample)
-	if labelsSnapshot == nil {
-		return
-	}
+	// A thread-derived label (see WithThreadLabel) is independent of the JFR
+	// label snapshot, so it must be added even when the snapshot is nil.
+	hasThreadLabel := correlation.ThreadLabelKey != "" && correlation.ThreadLabelValue != ""
 	const LabelProfileId = "profile_id"
 	const LabelSpanName = "span_name"
 	const LabelTraceId = "trace_id"
+	hasTraceId := correlation.TraceIdHi != 0 || correlation.TraceIdLo != 0
 	capacity := 0
 	if labelsCtx != nil {
 		capacity += len(labelsCtx.Labels)
@@ -144,26 +146,30 @@ func (m *ProfileBuilder) AddExternalSampleWithLabels(locs []uint64, values []int
 	if correlation.SpanName != 0 {
 		capacity++
 	}
-	if correlation.TraceIdHi != 0 || correlation.TraceIdLo != 0 {
+	if hasTraceId {
 		capacity++
 	}
-	if labelsCtx != nil {
+	if hasThreadLabel {
+		capacity++
+	}
+	if capacity > 0 {
 		sample.Label = make([]*profilev1.Label, 0, capacity)
+	}
+	if labelsCtx != nil && labelsSnapshot != nil {
 		for k, v := range labelsCtx.Labels {
 			sample.Label = append(sample.Label, &profilev1.Label{
 				Key: m.addString(labelsSnapshot.Strings[k]),
 				Str: m.addString(labelsSnapshot.Strings[v]),
 			})
 		}
-
 	}
-	if correlation.SpanId != 0 {
+	if labelsSnapshot != nil && correlation.SpanId != 0 {
 		sample.Label = append(sample.Label, &profilev1.Label{
 			Key: m.addString(LabelProfileId),
 			Str: m.addString(profileIdString(correlation.SpanId)),
 		})
 	}
-	if correlation.SpanName != 0 {
+	if labelsSnapshot != nil && correlation.SpanName != 0 {
 		spanName := labelsSnapshot.Strings[int64(correlation.SpanName)]
 		if spanName != "" {
 			sample.Label = append(sample.Label, &profilev1.Label{
@@ -172,10 +178,16 @@ func (m *ProfileBuilder) AddExternalSampleWithLabels(locs []uint64, values []int
 			})
 		}
 	}
-	if correlation.TraceIdHi != 0 || correlation.TraceIdLo != 0 {
+	if labelsSnapshot != nil && hasTraceId {
 		sample.Label = append(sample.Label, &profilev1.Label{
 			Key: m.addString(LabelTraceId),
 			Str: m.addString(traceIdString(correlation.TraceIdHi, correlation.TraceIdLo)),
+		})
+	}
+	if hasThreadLabel {
+		sample.Label = append(sample.Label, &profilev1.Label{
+			Key: m.addString(correlation.ThreadLabelKey),
+			Str: m.addString(correlation.ThreadLabelValue),
 		})
 	}
 }
@@ -198,6 +210,16 @@ type StacktraceCorrelation struct {
 	SpanName  uint64
 	TraceIdHi uint64
 	TraceIdLo uint64
+	// ThreadName, when set, is rendered as a synthetic root frame beneath the
+	// sampled stack so that samples group by the thread they ran on. It is part
+	// of the sample dedup key, so identical stacks on different threads stay
+	// distinct. Empty means no per-thread grouping (default behaviour).
+	ThreadName string
+	// ThreadLabelKey/ThreadLabelValue, when both set, add a pprof sample label
+	// derived from the thread name (see WithThreadLabel). Part of the dedup key
+	// so samples with different label values stay distinct.
+	ThreadLabelKey   string
+	ThreadLabelValue string
 }
 
 // FindExternalSampleWithLabels deprecated
@@ -223,4 +245,19 @@ func (m *ProfileBuilder) getTruncatedLocation() uint64 {
 	location := m.addLocation(f, 0)
 	m.truncatedLoc = uint64(location)
 	return m.truncatedLoc
+}
+
+// getThreadLocation returns a location for a synthetic frame naming the thread a
+// sample ran on, interning one location per distinct thread name.
+func (m *ProfileBuilder) getThreadLocation(threadName string) uint64 {
+	if m.threadLoc == nil {
+		m.threadLoc = map[string]uint64{}
+	}
+	if loc, ok := m.threadLoc[threadName]; ok {
+		return loc
+	}
+	f := m.addFunction(threadName)
+	location := uint64(m.addLocation(f, 0))
+	m.threadLoc[threadName] = location
+	return location
 }

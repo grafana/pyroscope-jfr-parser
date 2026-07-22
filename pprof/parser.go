@@ -10,6 +10,7 @@ import (
 type pprofOptions struct {
 	truncatedFrame       bool
 	disablePanicRecovery bool
+	thread               ThreadInfoOptions
 }
 type Option func(*pprofOptions)
 
@@ -23,6 +24,29 @@ func WithDisablePanicRecovery(v bool) Option {
 	return func(o *pprofOptions) {
 		o.disablePanicRecovery = v
 	}
+}
+
+// ThreadInfoOptions controls how the sampled thread of each execution sample is
+// surfaced. Requires per-thread sampling (async-profiler -t). All fields optional:
+// Frame renders the thread name as a root frame; LabelKey adds a sample label
+// under that key; Transform maps the raw thread name to the value used for both
+// (e.g. collapsing to a pool name), returning "" to omit and nil to use the raw name.
+type ThreadInfoOptions struct {
+	Frame     bool
+	LabelKey  string
+	Transform func(threadName string) string
+}
+
+// WithThreadInfo surfaces the sampled thread as a root frame and/or a sample
+// label, applying a shared name transform to both. Off by default.
+func WithThreadInfo(t ThreadInfoOptions) Option {
+	return func(o *pprofOptions) {
+		o.thread = t
+	}
+}
+
+func (t ThreadInfoOptions) enabled() bool {
+	return t.Frame || t.LabelKey != ""
 }
 
 func ParseJFR(body []byte, pi *ParseInput, jfrLabels *LabelsSnapshot, opts ...Option) (res *Profiles, err error) {
@@ -55,6 +79,24 @@ func parse(parser *parser.Parser, piOriginal *ParseInput, jfrLabels *LabelsSnaps
 
 	var values = [2]int64{1, 0}
 
+	// Transform is called per distinct thread name rather than per sample, since
+	// there are far fewer threads than samples and it may allocate.
+	var threadNameCache map[string]string
+	transformThreadName := func(name string) string {
+		if opt.thread.Transform == nil {
+			return name
+		}
+		if v, ok := threadNameCache[name]; ok {
+			return v
+		}
+		v := opt.thread.Transform(name)
+		if threadNameCache == nil {
+			threadNameCache = map[string]string{}
+		}
+		threadNameCache[name] = v
+		return v
+	}
+
 	for {
 		typ, err := parser.ParseEvent()
 		if err != nil {
@@ -72,6 +114,24 @@ func parse(parser *parser.Parser, piOriginal *ParseInput, jfrLabels *LabelsSnaps
 				SpanName:  parser.ExecutionSample.SpanName,
 				TraceIdHi: parser.ExecutionSample.TraceIdHi,
 				TraceIdLo: parser.ExecutionSample.TraceIdLo,
+			}
+			if opt.thread.enabled() {
+				if t := parser.GetThread(parser.ExecutionSample.SampledThread); t != nil {
+					name := t.JavaName
+					if name == "" {
+						name = t.OsName // native threads (GC, JIT compiler, VM tasks, etc)
+					}
+					name = transformThreadName(name)
+					if name != "" {
+						if opt.thread.Frame {
+							correlation.ThreadName = name
+						}
+						if opt.thread.LabelKey != "" {
+							correlation.ThreadLabelKey = opt.thread.LabelKey
+							correlation.ThreadLabelValue = name
+						}
+					}
+				}
 			}
 			if ts != nil && ts.Name != "STATE_SLEEPING" {
 				builders.addStacktrace(sampleTypeCPU, correlation, parser.ExecutionSample.StackTrace, values[:1])
