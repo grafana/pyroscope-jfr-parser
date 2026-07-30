@@ -3,6 +3,7 @@ package pprof
 import (
 	"fmt"
 	"io"
+	"regexp"
 	"strings"
 
 	"github.com/grafana/jfr-parser/parser"
@@ -48,6 +49,26 @@ func WithThreadInfo(t ThreadInfoOptions) Option {
 
 func (t ThreadInfoOptions) enabled() bool {
 	return t.Frame || t.LabelKey != ""
+}
+
+// RegexThreadTransform builds a ThreadInfoOptions.Transform that maps a thread
+// name to the first capture group of expr (e.g. a pool name), falling back to
+// the original name when it does not match so unrelated threads stay distinct.
+// It fails if expr does not compile or has no capture group.
+func RegexThreadTransform(expr string) (func(threadName string) string, error) {
+	re, err := regexp.Compile(expr)
+	if err != nil {
+		return nil, err
+	}
+	if re.NumSubexp() < 1 {
+		return nil, fmt.Errorf("thread name regex %q has no capture group", expr)
+	}
+	return func(threadName string) string {
+		if m := re.FindStringSubmatch(threadName); len(m) > 1 && m[1] != "" {
+			return m[1]
+		}
+		return threadName
+	}, nil
 }
 
 func ParseJFR(body []byte, pi *ParseInput, jfrLabels *LabelsSnapshot, opts ...Option) (res *Profiles, err error) {

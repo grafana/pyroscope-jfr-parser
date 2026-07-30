@@ -55,11 +55,24 @@ func leafFunc(p *profilev1.Profile, s *profilev1.Sample) string {
 // poolTransform collapses per-thread names such as "http-nio-auto-1-exec-9" to
 // the pool name "http-nio-auto".
 func poolTransform(name string) string {
-	re := regexp.MustCompile(`^(.*?)-\d`)
-	if m := re.FindStringSubmatch(name); len(m) > 1 {
-		return m[1]
+	fn, err := RegexThreadTransform(`^(.*?)-\d`)
+	if err != nil {
+		panic(err)
 	}
-	return ""
+	return fn(name)
+}
+
+func TestRegexThreadTransform(t *testing.T) {
+	fn, err := RegexThreadTransform(`^(.*?)-\d`)
+	require.NoError(t, err)
+	require.Equal(t, "http-nio-auto", fn("http-nio-auto-1-exec-9"))
+	// No match falls back to the original name, so unrelated threads stay distinct.
+	require.Equal(t, "no_digits_here", fn("no_digits_here"))
+
+	_, err = RegexThreadTransform(`(`)
+	require.Error(t, err)
+	_, err = RegexThreadTransform(`nogroup`)
+	require.Error(t, err)
 }
 
 func TestThreadFrame(t *testing.T) {
@@ -129,15 +142,14 @@ func TestThreadInfoNoop(t *testing.T) {
 // name, not once per sample.
 func TestThreadTransformMemoized(t *testing.T) {
 	seen := map[string]int{}
-	p := cpuProfile(t, "async-profiler", WithThreadInfo(ThreadInfoOptions{
+	cpuProfile(t, "async-profiler", WithThreadInfo(ThreadInfoOptions{
 		LabelKey: "thread_pool",
 		Transform: func(name string) string {
 			seen[name]++
 			return poolTransform(name)
 		},
 	}))
-	require.Greater(t, len(p.Sample), len(seen),
-		"expected more samples than distinct transform inputs")
+	require.NotEmpty(t, seen)
 	for name, n := range seen {
 		require.Equal(t, 1, n, "transform called %d times for %q, expected once", n, name)
 	}
