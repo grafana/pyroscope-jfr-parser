@@ -18,6 +18,6 @@ require (
 	github.com/google/gnostic-models v0.7.1 // indirect
 	github.com/planetscale/vtprotobuf v0.6.1-0.20250313105119-ba97887b0a25 // indirect
 	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
-	go.yaml.in/yaml/v3 v3.0.4 // indirect
+	go.yaml.in/yaml/v3 v3.0.6 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
